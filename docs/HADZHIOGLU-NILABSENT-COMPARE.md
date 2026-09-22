@@ -98,6 +98,27 @@ if (i_ret < 0)
 
 This also means `common_ex.c` should remain a function-level comparison target; a whole-file replacement could remove nilabsent's TP-Link factory fallback.
 
+## Batch 7 — `trunk/user/rc/firewall_ex.c`
+
+The file has different blob SHAs, but the inspected implementation through the early firewall rule-generation sections is identical between the two trees: protocol conversion, time matching, IP-range conversion, static routes, VPN client rules, MAC filter, URL/webstr filter, low-level filter and virtual-server/NAT generation all match in the inspected ranges.
+
+The file should therefore **not** be replaced wholesale merely because its SHA differs. The remaining tail still needs function-level inspection before declaring the file fully equivalent.
+
+**Decision so far: 🟡 function-level comparison; no transfer candidate identified.**
+
+## Batch 8 — `trunk/user/rc/services.c`
+
+The beginning of `services.c` is functionally equivalent for syslog/klogd/infosvr/crond/networkmap/telnetd/sshd. There is a small implementation difference in `start_syslogd()`:
+
+- Hadzhioglu starts with `-L` unset and enables it dynamically when remote logging is configured.
+- nilabsent includes `-L` in the initial argv and always supplies the remote `-R` pair only when a valid remote log address exists.
+
+This does not justify importing the old file.
+
+More importantly, nilabsent contains a dedicated `APP_ZAPRET` service block (`is_zapret_run`, `stop_zapret`, `start_zapret`, `restart_zapret`, `reload_zapret`). A search of the Hadzhioglu tree found no `is_zapret_run` implementation.
+
+**Decision: KEEP nilabsent.** Zapret is nilabsent-only functionality, not a lost Hadzhioglu feature.
+
 ## KMS finding
 
 The earlier search for `kms` in nilabsent mostly finds Linux DRM Kernel Mode Setting code. That is unrelated to a Windows KMS server.
