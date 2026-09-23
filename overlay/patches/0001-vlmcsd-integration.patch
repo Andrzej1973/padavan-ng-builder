@@ -247,3 +247,22 @@ index 0000000..0000000 100644
 +							</td>
 +						</tr>
  						<tr id="row_crontabs" style="display:none">
+
+diff --git a/trunk/user/httpd/web_ex.c b/trunk/user/httpd/web_ex.c
+index 0000000..0000000 100644
+--- a/trunk/user/httpd/web_ex.c
++++ b/trunk/user/httpd/web_ex.c
+@@ -2191,6 +2191,7 @@
+ 		"function found_app_privoxy() { return %d;}\n"
+ 		"function found_app_dnscrypt() { return %d;}\n"
++		"function found_app_vlmcsd() { return %d;}\n"
+ 		"function found_support_wpad() { return %d;}\n"
+ 		"function found_support_zram() { return %d;}\n"
+@@ -2205,6 +2206,7 @@
+ 		found_app_tor,
+ 		found_app_privoxy,
+ 		found_app_dnscrypt,
++		found_app_vlmcsd,
+ 		found_support_wpad,
+ 		found_support_zram,
+ 		found_support_ipset,
