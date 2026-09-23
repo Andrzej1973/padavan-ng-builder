@@ -334,3 +334,22 @@ This does not mean the user's current build is broken or incomplete. It means th
 5. mt7621_cpufreq — leave aside unless we explicitly decide to experiment with CPU frequency
 
 No firmware source code has been copied yet.
+## Batch 15 — refine the config-drift candidates
+
+Direct source searches against current nilabsent/master give three especially clear results:
+
+- ndisc6/rdisc6: no current source references or standalone package were found.
+- obfs4: no current source references or standalone package were found.
+- vlmcsd: no current source references or standalone package were found.
+
+Therefore these three are genuine source-level candidates to recover from current Hadzhioglu, provided their build integration is ported.
+
+Two other user-config options need a different treatment:
+
+- CONFIG_FIRMWARE_INCLUDE_NFQWS: nilabsent already contains nfqws and nfqws2 under trunk/user/zapret/zapret and trunk/user/zapret/zapret2. The Makefiles install them as /usr/bin/nfqws and /usr/bin/nfqws2. Do not transplant the older Hadzhioglu nfqws package.
+- CONFIG_FIRMWARE_INCLUDE_USBIP: nilabsent contains the USB/IP kernel and userspace source under Linux staging, so the feature itself exists. The current WR1200JS template simply does not expose the user's old config symbol. Treat this as a build-system/config integration question, not as a missing source package.
+- CONFIG_FIRMWARE_INCLUDE_SOCAT: nilabsent contains a socat package, so likewise it is not a missing source package. The missing symbol in the current WR1200JS template needs build-system investigation before any transfer.
+
+sysfsutils is different again: nilabsent's USB/IP userspace README lists sysfsutils >= 2.0.0 as a dependency, while the current nilabsent tree has no standalone sysfsutils package. The current Hadzhioglu tree does. Therefore sysfsutils is a dependency candidate to investigate together with USB/IP, not an independent user feature.
+
+Current highest-value recovery candidates are now: vlmcsd, ndisc6/rdisc6 and obfs4.
