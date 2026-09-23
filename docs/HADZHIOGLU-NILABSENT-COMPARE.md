@@ -230,3 +230,16 @@ We are not doing whole-file replacements. The working rule is:
 - 🔵 nilabsent-only feature → preserve it; it is not a missing Hadzhioglu feature.
 
 No firmware source file has been modified yet. The experimental branch contains only the comparison documentation.
+
+
+## Batch 12 — top-level `trunk/user` inventory and `radvd`
+
+A direct top-level inventory of `trunk/user` shows one Hadzhioglu-only directory:
+
+`radvd/`
+
+nilabsent has no corresponding `trunk/user/radvd` directory. The Hadzhioglu package contains a full `radvd-2.X` source tree and a Makefile whose `romfs` target installs `radvd` as `/usr/sbin/radvd`.
+
+However, neither Hadzhioglu nor nilabsent's `trunk/user/Makefile` contains a reference to `radvd`. The nilabsent tree does contain PPP IPv6 sample scripts that refer to an external `/usr/sbin/radvd`, and its changelog mentions historical radvd updates, but there is no current `trunk/user/radvd` source package.
+
+**Decision: 🟡 investigate, but DO NOT transfer yet.** The package is a plausible legacy IPv6 component, but current source-level evidence does not show that the Hadzhioglu package is actually part of the normal firmware build. Copying the whole daemon without establishing its build/config integration would add unused code and possibly increase image size. The next check is the IPv6 build/config path and runtime references.
