@@ -8,13 +8,11 @@ Sources checked:
 
 ## Batch 1 — `trunk/user/httpd`
 
-### `image.h`
+### HTTPD file inventory correction
 
-**Hadzhioglu:** exists as `trunk/user/httpd/image.h`.
+A later direct directory inventory corrected the earlier preliminary observation: **both repositories have the same 25 files in `trunk/user/httpd`**, including `image_tplink.h` and `image_uimage.h`. There is no `image.h` in either current source tree.
 
-**nilabsent:** `trunk/user/httpd/image.h` is absent. nilabsent instead has `image_uimage.h` and `image_tplink.h`; the relevant U-Boot image definitions were reorganized rather than simply deleted.
-
-**Decision: DO NOT copy `image.h` as a new file.** The old definitions are already represented by the newer image headers; copying the old name risks duplicate/ambiguous definitions.
+**Decision: no image header transfer is required.**
 
 ### `httpd/Makefile`
 
@@ -153,11 +151,74 @@ and its service checks still reference `found_app_tor()` / `found_app_privoxy()`
 
 **Decision: KEEP nilabsent.**
 
+## Batch 10 — WebUI file inventory
+
+A direct filename inventory of `trunk/user/www/n56u_ribbon_fixed` gives:
+
+- Hadzhioglu: 103 top-level entries;
+- nilabsent: 110 top-level entries.
+
+After excluding common directory entries (`aidisk`, `bootstrap`, `device-map`, `images`), the **only Hadzhioglu-only file is**:
+
+`Nologin.asp`
+
+The nilabsent-only WebUI files are:
+
+- `Advanced_Services_DNSCrypt.asp`
+- `Advanced_Services_DoH.asp`
+- `Advanced_Services_DoT.asp`
+- `Advanced_Services_Proxy.asp`
+- `Advanced_Services_Zapret.asp`
+- `jquery.multiSelectDropdown.css`
+- `jquery.multiSelectDropdown.js`
+- `qrcode.min.js`
+
+The nilabsent-only files are consistent with its expanded/reorganized Services and VPN UI.
+
+### `Nologin.asp`
+
+Hadzhioglu's file is a small static page using `login_state_hook()`, displaying `login_ip_str()` and the `login_hint1/login_hint2` messages. A source search did **not** find a reference to the literal filename `Nologin.asp` in either tree.
+
+**Decision: 🔴 do not copy yet.** It is self-contained, but until a backend redirect/reference to `Nologin.asp` is found, adding it would only add an apparently unused page.
+
+### Directory-level inventory
+
+Direct filename comparison currently gives:
+
+| Directory | Hadzhioglu-only | nilabsent-only |
+|---|---:|---:|
+| `trunk/user/httpd` | 0 | 0 |
+| `trunk/user/rc` | 0 | 1 (`vpn_wireguard.c`) |
+| `trunk/user/shared` | 0 | 0 |
+| `trunk/user/www/n56u_ribbon_fixed` | 1 (`Nologin.asp`) | 8 |
+
+This is a strong indication that the useful differences are primarily **inside existing files**, not missing standalone files.
+
 ## KMS finding
 
 The earlier search for `kms` in nilabsent mostly finds Linux DRM Kernel Mode Setting code. That is unrelated to a Windows KMS server.
 
 The searched Hadzhioglu source tree did not reveal `vlmcsd` or a Windows KMS server. Therefore no KMS server should be copied based on the current evidence. If the KMS server was present in a specific prebuilt Hadzhioglu-based firmware, that build/package must be identified separately.
+
+## Batch 11 — VPN/WebUI function and field inventory
+
+For `vpncli.asp` and `vpnsrv.asp`, comparing extracted JavaScript function names and HTML form-field names found **no function or field present only in Hadzhioglu**.
+
+nilabsent adds substantial VPN functionality, including:
+
+- WireGuard client UI and key generation;
+- AmneziaWG parameters;
+- WireGuard/OpenVPN configuration import;
+- VPN client access-control and IPSet selection;
+- WireGuard server fields and client export/QR helpers.
+
+Therefore the much larger nilabsent VPN pages are genuine extensions, not evidence of dropped Hadzhioglu functionality.
+
+For `Advanced_Tweaks_Content.asp` and `Advanced_Scripts_Content.asp`, function and field inventories are identical; the detected content difference is only the `show_menu()` index.
+
+For `Advanced_Console_Content.asp`, the functional code and fields are identical; differences are the menu index and textarea presentation.
+
+For `Advanced_Services_Content.asp`, Hadzhioglu-only fields/functions are exactly the Tor/Privoxy/DNSCrypt controls moved into nilabsent's dedicated Services pages. Searches confirm the same `tor_enable`, `privoxy_enable`, and `dnscrypt_enable` functionality remains in nilabsent.
 
 ## Current rule
 
