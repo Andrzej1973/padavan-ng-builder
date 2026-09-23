@@ -209,3 +209,41 @@ index 0000000..0000000 100644
  	int found_support_zram = 1;
  #else
 *** End Patch
+diff --git a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
+index 0000000..0000000 100644
+--- a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
++++ b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
+@@ -27,6 +27,7 @@
+ 	init_itoggle('lltd_enable');
+ 	init_itoggle('adsc_enable');
+ 	init_itoggle('crond_enable', change_crond_enabled);
++	init_itoggle('vlmcsd_enable');
+ 	init_itoggle('watchdog_cpu');
+ });
+@@ -88,6 +89,9 @@
+ 	}
+ 	change_crond_enabled();
++
++	if(!found_app_vlmcsd())
++		showhide_div('row_vlmcsd', 0);
+ }
+ 
+ function applyRule(){
+@@ -531,6 +535,25 @@
+ 							</td>
+ 						</tr>
++						<tr id="row_vlmcsd">
++							<th>KMS Activation server</th>
++							<td>
++								<div class="main_itoggle">
++									<div id="vlmcsd_enable_on_of">
++										<input type="checkbox" id="vlmcsd_enable_fake" <% nvram_match_x("", "vlmcsd_enable", "1", "value=1 checked"); %><% nvram_match_x("", "vlmcsd_enable", "0", "value=0"); %>>
++									</div>
++								</div>
++								<div style="position: absolute; margin-left: -10000px;">
++									<input type="radio" name="vlmcsd_enable" id="vlmcsd_enable_1" class="input" value="1" <% nvram_match_x("", "vlmcsd_enable", "1", "checked"); %>/><#checkbox_Yes#>
++									<input type="radio" name="vlmcsd_enable" id="vlmcsd_enable_0" class="input" value="0" <% nvram_match_x("", "vlmcsd_enable", "0", "checked"); %>/><#checkbox_No#>
++								</div>
++							</td>
++						</tr>
+ 						<tr id="row_crontabs" style="display:none">
