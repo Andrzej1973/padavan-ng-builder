@@ -12,6 +12,11 @@ if [ -d "$OVERLAY_DIR" ]; then
     cp -a "$OVERLAY_DIR"/. "$PADAVAN_DIR"/
 fi
 
+PATCH_FILE="$ROOTDIR/overlay/patches/0001-vlmcsd-integration.patch"
+if [ -f "$PATCH_FILE" ]; then
+    patch -d "$PADAVAN_DIR" -p1 --forward < "$PATCH_FILE"
+fi
+
 append_make_dir() {
     line="$1"
     if ! grep -Fqx "$line" "$USER_MAKEFILE"; then
