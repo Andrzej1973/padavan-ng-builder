@@ -13,7 +13,7 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar xf $(SRC_NAME).tar.bz2; \
-		sed -i 's/CC=\\"\$$(CC)\\"/'\''CC="\$$(CC)'\''/g' $(SRC_NAME)/Makefile.in; \
+		sed -i 's/CC=\\"\$(CC)\\"/'\''CC="\$(CC)"'\''/g' $(SRC_NAME)/Makefile.in; \
 	fi )
 
 config_test:
