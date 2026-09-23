@@ -353,3 +353,25 @@ Two other user-config options need a different treatment:
 sysfsutils is different again: nilabsent's USB/IP userspace README lists sysfsutils >= 2.0.0 as a dependency, while the current nilabsent tree has no standalone sysfsutils package. The current Hadzhioglu tree does. Therefore sysfsutils is a dependency candidate to investigate together with USB/IP, not an independent user feature.
 
 Current highest-value recovery candidates are now: vlmcsd, ndisc6/rdisc6 and obfs4.
+## Batch 16 — correction: USBIP and SOCAT are also current Hadzhioglu-only user packages
+
+A fresh direct inventory of nilabsent/master trunk/user has 78 top-level entries and does NOT contain standalone socat or usbip directories.
+
+Current Hadzhioglu GitLab does contain both socat and usbip directories in trunk/user.
+
+Therefore the earlier Batch 14 wording that treated socat as already present in nilabsent was incorrect and is superseded by this batch.
+
+USB/IP needs to be treated as a two-part feature: nilabsent contains the Linux 3.4 USB/IP kernel/userspace source under the kernel staging tree, but it lacks the current Hadzhioglu trunk/user usbip package/build integration. The user config has CONFIG_FIRMWARE_INCLUDE_USBIP=y, so this is a concrete candidate for restoring the user-space build integration, likely together with sysfsutils.
+
+SOCAT is also a current Hadzhioglu user package but has no standalone socat directory in nilabsent/master. The user config has CONFIG_FIRMWARE_INCLUDE_SOCAT=y, so it is another concrete candidate to inspect before the next experimental source commit.
+
+Updated high-priority candidate set for the user's active build.config:
+
+1. vlmcsd / KMS
+2. ndisc6 + rdisc6
+3. obfs4
+4. usbip + sysfsutils
+5. socat
+
+NFQWS remains excluded from this transfer list because nilabsent already provides nfqws/nfqws2 through its zapret and zapret2 packages.
+mt7621_cpufreq remains excluded for now because the user's option is commented.
