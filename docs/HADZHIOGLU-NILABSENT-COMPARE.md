@@ -119,6 +119,40 @@ More importantly, nilabsent contains a dedicated `APP_ZAPRET` service block (`is
 
 **Decision: KEEP nilabsent.** Zapret is nilabsent-only functionality, not a lost Hadzhioglu feature.
 
+## Batch 9 — WebUI `n56u_ribbon_fixed`
+
+The WebUI directories have the same broad structure, and many core pages have identical blob SHAs. Examples already verified include `Advanced_ACL2g_Content.asp`, `Advanced_ACL_Content.asp`, `Advanced_AiDisk_ftp.asp`, `Advanced_AiDisk_others.asp`, `Advanced_AiDisk_samba.asp`, `Advanced_BasicFirewall_Content.asp`, and `Advanced_Console_Content.asp`.
+
+### `Advanced_Services_Content.asp`
+
+This is a particularly useful example of **reorganization rather than loss**.
+
+Hadzhioglu's page contains the Tor, Privoxy and DNSCrypt controls directly in the main Services page (`found_app_tor()`, `found_app_privoxy()`, `found_app_dnscrypt()`, their enable/config rows and handlers).
+
+nilabsent removes those controls from the main page and separates the Services menu into dedicated pages. Its `state.js` explicitly contains:
+
+- `Advanced_Services_DNSCrypt.asp`
+- `Advanced_Services_DoH.asp`
+- `Advanced_Services_DoT.asp`
+- `Advanced_Services_Zapret.asp`
+- `Advanced_Services_Proxy.asp`
+
+and its service checks still reference `found_app_tor()` / `found_app_privoxy()`. Therefore the old Tor/Privoxy/DNSCrypt code was not simply lost; the WebUI was reorganized into separate service pages.
+
+**Decision: DO NOT copy Hadzhioglu's `Advanced_Services_Content.asp`.** Keep nilabsent's split WebUI.
+
+### `Advanced_Services_Service7.asp` / `Service8.asp`
+
+`state.js` in both generations contains placeholder menu slots for `Advanced_Services_Service7.asp` and `Advanced_Services_Service8.asp`, but a direct file lookup in the Hadzhioglu tree returned 404 for `Service7`, and the nilabsent tree also returns 404 for `Service7`.
+
+**Decision: NOT a missing-file candidate.** These are menu slots/placeholders, not a file that should be copied.
+
+### USB modem page
+
+`Advanced_Modem_others.asp` exists in nilabsent and remains referenced by its device-map and Makefile. It is therefore not a Hadzhioglu-only page that was dropped.
+
+**Decision: KEEP nilabsent.**
+
 ## KMS finding
 
 The earlier search for `kms` in nilabsent mostly finds Linux DRM Kernel Mode Setting code. That is unrelated to a Windows KMS server.
