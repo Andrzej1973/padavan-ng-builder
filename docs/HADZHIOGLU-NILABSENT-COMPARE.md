@@ -243,3 +243,29 @@ nilabsent has no corresponding `trunk/user/radvd` directory. The Hadzhioglu pack
 However, neither Hadzhioglu nor nilabsent's `trunk/user/Makefile` contains a reference to `radvd`. The nilabsent tree does contain PPP IPv6 sample scripts that refer to an external `/usr/sbin/radvd`, and its changelog mentions historical radvd updates, but there is no current `trunk/user/radvd` source package.
 
 **Decision: 🟡 investigate, but DO NOT transfer yet.** The package is a plausible legacy IPv6 component, but current source-level evidence does not show that the Hadzhioglu package is actually part of the normal firmware build. Copying the whole daemon without establishing its build/config integration would add unused code and possibly increase image size. The next check is the IPv6 build/config path and runtime references.
+
+
+## Batch 13 — WR1200JS board/config support
+
+A direct lookup of `trunk/configs/boards/YOUHUA/WR1200JS` produced a major difference:
+
+- **nilabsent:** has a complete WR1200JS board package: `board.h`, `board.mk`, `kernel-3.4.x.config`, `partitions.config`;
+- **current Hadzhioglu `dev`:** has no `trunk/configs/boards/YOUHUA/WR1200JS` directory and no YOUHUA board directory at all (only YOUKU appears among similarly named board directories).
+
+The nilabsent WR1200JS partition definition is:
+
+- Bootloader: `0x000000` / `0x30000`
+- Config: `0x30000` / `0x10000`
+- Factory: `0x40000` / `0x10000`
+- Firmware: `0x50000` / `0xF70000`
+- Storage: `0xFC0000` / `0x40000`
+
+This matches the WR1200JS MTD layout observed during the router work, so this is not a generic MT7621 profile.
+
+The board header also defines the actual WR1200JS GPIO/features, including reset/WPS/FN1 buttons, power/USB LED GPIOs, dual-band 2x2 radio counts, one Ethernet LED, gigabit PHYs, and one USB port. The board kernel configuration selects MT7621 ASIC, 128 MB RAM, MT7603E 2.4 GHz and MT7612E 5 GHz radios.
+
+The associated `wr1200js.config` template enables several features relevant to the current firmware build, including USB, EXT4, FUSE, swap, XFRM/IPsec, IPSet, SFTP, StrongSwan, AmneziaWG, DNSCrypt, Stubby/DoT, DoH, ADB, EoIP, Zapret/Zapret2; WireGuard, Tor, Privoxy, iPerf3 and ZeroTier are present as optional commented selections in the template.
+
+Git history in nilabsent identifies commit `833734c0b9b48c50ac2ad71fbf6bef6e886c8233` ("firmware: add support for Youhua WR1200JS") from 2018-10-10 and subsequent WR1200JS config updates. The searched current Hadzhioglu history did not return WR1200JS support commits.
+
+**Decision: this is NOT a missing feature to transplant from Hadzhioglu.** It is the opposite: WR1200JS board support is a nilabsent-side feature relative to the currently checked Hadzhioglu `dev`. The board configuration should remain the canonical hardware definition for the WR1200JS branch.
