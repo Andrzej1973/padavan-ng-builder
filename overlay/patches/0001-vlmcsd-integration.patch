@@ -1,0 +1,211 @@
+diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
+index 0000000..0000000 100644
+--- a/trunk/user/httpd/common.h
++++ b/trunk/user/httpd/common.h
+@@ -93,6 +93,7 @@
+ #define EVM_RELOAD_TOR			(1ULL << 52)
+ #define EVM_FLUSH_IPSET_DHCPD		(1ULL << 53)
++#define EVM_RESTART_VLMCSD		(1ULL << 54)
+ 
+ #define EVM_RELOAD_FIREWALL		(1ULL << 60)
+ #define EVM_RESTART_REBOOT		(1ULL << 62)
+@@ -128,6 +129,7 @@
+ #define EVT_RESTART_STUBBY		1
+ #define EVT_RESTART_TOR			2
+ #define EVT_RESTART_PRIVOXY		1
++#define EVT_RESTART_VLMCSD		1
+ 
+ diff --git a/trunk/user/shared/cflags.mk b/trunk/user/shared/cflags.mk
+index 0000000..0000000 100644
+--- a/trunk/user/shared/cflags.mk
++++ b/trunk/user/shared/cflags.mk
+@@ -244,6 +244,10 @@ ifeq ($(CONFIG_FIRMWARE_INCLUDE_OPENSSL_EC),y)
+ CFLAGS += -DSUPPORT_OPENSSL_EC
+ endif
+ 
++ifeq ($(CONFIG_FIRMWARE_INCLUDE_VLMCSD),y)
++CFLAGS += -DAPP_VLMCSD
++endif
++
+ ifeq ($(CONFIG_FIRMWARE_INCLUDE_IPERF3),y)
+ CFLAGS += -DAPP_IPERF3
+ endif
+diff --git a/trunk/user/shared/notify_rc.h b/trunk/user/shared/notify_rc.h
+index 0000000..0000000 100644
+--- a/trunk/user/shared/notify_rc.h
++++ b/trunk/user/shared/notify_rc.h
+@@ -52,6 +52,7 @@
+ #define RCN_RESTART_PRIVOXY		"restart_privoxy"
+ #define RCN_RESTART_DNSCRYPT		"restart_dnscrypt"
++#define RCN_RESTART_VLMCSD		"restart_vlmcsd"
+ #define RCN_RESTART_WINS		"restart_wins"
+ #define RCN_RESTART_LLTD		"restart_lltd"
+ #define RCN_RESTART_ADSC		"restart_adsc"
+diff --git a/trunk/user/rc/rc.h b/trunk/user/rc/rc.h
+index 0000000..0000000 100644
+--- a/trunk/user/rc/rc.h
++++ b/trunk/user/rc/rc.h
+@@ -567,6 +567,12 @@
+ void start_dnscrypt(void);
+ void restart_dnscrypt(void);
+ #endif
++#if defined(APP_VLMCSD)
++int is_vlmcsd_run(void);
++void stop_vlmcsd(void);
++void start_vlmcsd(void);
++void restart_vlmcsd(void);
++#endif
+ 
+ /* services_ex.c */
+ int fill_dnsmasq_servers(void);
+diff --git a/trunk/user/rc/services.c b/trunk/user/rc/services.c
+index 0000000..0000000 100644
+--- a/trunk/user/rc/services.c
++++ b/trunk/user/rc/services.c
+@@ -464,6 +464,34 @@ restart_dnscrypt(void)
+ }
+ #endif
+ 
++#if defined(APP_VLMCSD)
++int
++is_vlmcsd_run(void)
++{
++	if (check_if_file_exist("/usr/bin/vlmcsd"))
++	{
++		if (pids("vlmcsd"))
++			return 1;
++	}
++	return 0;
++}
++
++void
++stop_vlmcsd(void)
++{
++	eval("/usr/bin/vlmcsd.sh", "stop");
++}
++
++void
++start_vlmcsd(void)
++{
++	if (nvram_get_int("vlmcsd_enable") == 1)
++		eval("/usr/bin/vlmcsd.sh", "start");
++}
++
++void
++restart_vlmcsd(void)
++{
++	stop_vlmcsd();
++	start_vlmcsd();
++}
++#endif
++
+ void
+ start_httpd(int restart_fw)
+ {
+@@ -671,6 +699,9 @@ start_services_once(int is_ap_mode)
+ #endif
+ 	}
+ 
++#if defined(APP_VLMCSD)
++	start_vlmcsd();
++#endif
+ #if defined(APP_ZAPRET)
+ 	start_zapret();
+ #endif
+@@ -715,6 +746,9 @@ stop_services(int stopall)
+ #if defined(APP_ZAPRET)
+ 	stop_zapret();
+ #endif
++#if defined(APP_VLMCSD)
++	stop_vlmcsd();
++#endif
+ 	stop_networkmap();
+ 	stop_lltd();
+ 	stop_detect_internet();
+diff --git a/trunk/user/rc/rc.c b/trunk/user/rc/rc.c
+index 0000000..0000000 100644
+--- a/trunk/user/rc/rc.c
++++ b/trunk/user/rc/rc.c
+@@ -1311,6 +1311,12 @@
+ 		{
+ 			restart_zram();
+ 		}
+ #endif
++#if defined(APP_VLMCSD)
++		else if (strcmp(entry->d_name, RCN_RESTART_VLMCSD) == 0)
++		{
++			restart_vlmcsd();
++			restart_dhcpd();
++		}
++#endif
+ 		else if (strcmp(entry->d_name, RCN_RESTART_LLTD) == 0)
+ 		{
+ 			restart_lltd();
+diff --git a/trunk/user/rc/services_ex.c b/trunk/user/rc/services_ex.c
+index 0000000..0000000 100644
+--- a/trunk/user/rc/services_ex.c
++++ b/trunk/user/rc/services_ex.c
+@@ -544,6 +544,11 @@
+ #if defined(APP_SMBD) || defined(APP_NMBD)
+ 		else if (nvram_get_int("wins_enable"))
+ 			fprintf(fp, "dhcp-option=tag:%s,%d,%s\n", DHCPD_RANGE_DEF_TAG, 44, ipaddr);
+ #endif
++#if defined(APP_VLMCSD)
++		if (nvram_get_int("vlmcsd_enable"))
++			fprintf(fp, "srv-host=%s.%s,%s,%d\n", "_VLMCS", "_tcp", ipaddr, 1688);
++#endif
+ 		if (i_verbose == 0 || i_verbose == 2)
+ 			fprintf(fp, "quiet-dhcp\n");
+ 
+diff --git a/trunk/user/shared/defaults.c b/trunk/user/shared/defaults.c
+index 0000000..0000000 100644
+--- a/trunk/user/shared/defaults.c
++++ b/trunk/user/shared/defaults.c
+@@ -660,6 +660,9 @@
+ 	{ "dnscrypt_mode", "1" },
+ #endif
++#if defined (APP_VLMCSD)
++	{ "vlmcsd_enable", "0" },
++#endif
+ 	{ "lltd_enable", "1" },
+ 	{ "adsc_enable", "0" },
+ 	{ "crond_enable", "0" },
+diff --git a/trunk/user/httpd/variables.c b/trunk/user/httpd/variables.c
+index 0000000..0000000 100644
+--- a/trunk/user/httpd/variables.c
++++ b/trunk/user/httpd/variables.c
+@@ -127,6 +127,9 @@
+ #if defined (USE_NAND_FLASH)
+ 			{"mtd_rwfs_mount", "", NULL, FALSE},
+ #endif
++#if defined (APP_VLMCSD)
++			{"vlmcsd_enable", "", NULL, EVM_RESTART_VLMCSD},
++#endif
+ 			{"http_username", "", NULL, EVM_RESTART_CROND|EVM_BLOCK_UNSAFE},
+ 			{"http_passwd", "", NULL, EVM_BLOCK_UNSAFE},
+ 			{"modem_rule", "", NULL, EVM_RESTART_MODEM},
+@@ -1051,6 +1054,9 @@
+ #if defined(APP_DNSCRYPT)
+ 		{EVM_RESTART_DNSCRYPT,		EVT_RESTART_DNSCRYPT,		RCN_RESTART_DNSCRYPT,		EVM_RESTART_FIREWALL},
+ #endif
++#if defined(APP_VLMCSD)
++		{EVM_RESTART_VLMCSD,		EVT_RESTART_VLMCSD,		RCN_RESTART_VLMCSD,		EVM_RESTART_DHCPD},
++#endif
+ 		{EVM_RESTART_TELNETD,		EVT_RESTART_TELNETD,		RCN_RESTART_TELNETD,		0},
+diff --git a/trunk/user/httpd/web_ex.c b/trunk/user/httpd/web_ex.c
+index 0000000..0000000 100644
+--- a/trunk/user/httpd/web_ex.c
++++ b/trunk/user/httpd/web_ex.c
+@@ -2160,6 +2160,11 @@
+ #else
+ 	int found_app_xupnpd = 0;
+ #endif
++#if defined(APP_VLMCSD)
++	int found_app_vlmcsd = 1;
++#else
++	int found_app_vlmcsd = 0;
++#endif
+ #if defined(SUPPORT_ZRAM)
+ 	int found_support_zram = 1;
+ #else
+*** End Patch
