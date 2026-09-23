@@ -15,7 +15,7 @@ index 0000000..0000000 100644
  #define EVT_RESTART_PRIVOXY		1
 +#define EVT_RESTART_VLMCSD		1
  
- diff --git a/trunk/user/shared/cflags.mk b/trunk/user/shared/cflags.mk
+diff --git a/trunk/user/shared/cflags.mk b/trunk/user/shared/cflags.mk
 index 0000000..0000000 100644
 --- a/trunk/user/shared/cflags.mk
 +++ b/trunk/user/shared/cflags.mk
