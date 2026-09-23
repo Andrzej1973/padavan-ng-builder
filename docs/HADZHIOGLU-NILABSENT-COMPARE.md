@@ -269,3 +269,68 @@ The associated `wr1200js.config` template enables several features relevant to t
 Git history in nilabsent identifies commit `833734c0b9b48c50ac2ad71fbf6bef6e886c8233` ("firmware: add support for Youhua WR1200JS") from 2018-10-10 and subsequent WR1200JS config updates. The searched current Hadzhioglu history did not return WR1200JS support commits.
 
 **Decision: this is NOT a missing feature to transplant from Hadzhioglu.** It is the opposite: WR1200JS board support is a nilabsent-side feature relative to the currently checked Hadzhioglu `dev`. The board configuration should remain the canonical hardware definition for the WR1200JS branch.
+
+## Batch 14 — current Hadzhioglu GitLab vs nilabsent: real package-level candidates
+
+The earlier GitHub hadzhioglu/padavan-fw tree was too old/incomplete a source for this question. The current Hadzhioglu project is gitlab.com/hadzhioglu/padavan-ng, whose current trunk/user tree contains several packages that are not present as standalone directories in nilabsent/master.
+
+Important current Hadzhioglu-only package candidates compared with nilabsent/master:
+
+| Package | Current Hadzhioglu | nilabsent/master | Preliminary decision |
+|---|---|---|---|
+| vlmcsd | yes | no | strong candidate; inspect build hooks before transfer |
+| ndisc6 | yes | no | likely standalone transfer candidate |
+| obfs4 | yes | no | transfer only with build/toolchain dependencies |
+| nfqws | yes as a package | no standalone package | do not copy: nilabsent already ships nfqws through zapret/zapret2 |
+| mt7621_cpufreq | yes | no | leave aside; user's WR1200JS config has this option commented |
+| sysfsutils | yes | no | likely support/dependency package for USB/IP userspace |
+
+### vlmcsd — KMS
+
+Current Hadzhioglu GitLab has a dedicated trunk/user/vlmcsd package. Its current tree records a recent change titled “Auto set _VLMCS srv-record if vlmcsd ON”. This is the KMS/vlmcsd feature that was not visible in the earlier GitHub hadzhioglu/padavan-fw snapshot.
+
+The user's youhua-wr1200js/build.config already contains CONFIG_FIRMWARE_INCLUDE_VLMCSD=y, but the current nilabsent WR1200JS template does not define this symbol and the nilabsent source search does not find vlmcsd or CONFIG_FIRMWARE_INCLUDE_VLMCSD.
+
+Decision: confirmed high-priority candidate for deeper inspection. Do not copy the directory yet: we need the current Hadzhioglu trunk/user/Makefile integration and exact package files, then transplant the minimal package/build hook into the experimental branch.
+
+### ndisc6 / rdisc6
+
+Current Hadzhioglu has a dedicated ndisc6 package and explicitly documents the build option in the directory listing as CONFIG_FIRMWARE_INCLUDE_NDISC6_RDISC6=y.
+
+The user's build.config has this option enabled. The current nilabsent WR1200JS template has no corresponding option and nilabsent has no trunk/user/ndisc6 directory.
+
+Decision: strong candidate for transfer, subject to checking its Makefile and adding the corresponding build variable minimally.
+
+### obfs4
+
+Current Hadzhioglu has a dedicated obfs4 package and its current tree records an obfs4 package update. The user's WR1200JS config has CONFIG_FIRMWARE_INCLUDE_OBFS4=y.
+
+The current nilabsent WR1200JS template does not define the option and nilabsent has no standalone trunk/user/obfs4 package.
+
+Decision: candidate, but not a blind copy. obfs4 is substantially larger than ndisc6/vlmcsd and depends on its Go build/package arrangement.
+
+### Important config mismatch
+
+The user's build.config is not equivalent to the current nilabsent WR1200JS template.
+
+Active options in the user's config that are absent from the current nilabsent WR1200JS template include:
+
+- CONFIG_FIRMWARE_INCLUDE_USBIP
+- CONFIG_FIRMWARE_INCLUDE_SOCAT
+- CONFIG_FIRMWARE_INCLUDE_NDISC6_RDISC6
+- CONFIG_FIRMWARE_INCLUDE_OBFS4
+- CONFIG_FIRMWARE_INCLUDE_VLMCSD
+
+Several other user-enabled options are present in nilabsent but currently commented there, including CPU sleep, HID, QoS/IMQ/IFB, WireGuard, Tor/GeoIP, Privoxy, iPerf3, ZeroTier, Shadowsocks and image-size optimization.
+
+This does not mean the user's current build is broken or incomplete. It means the configuration file and the current nilabsent board template have diverged, and some symbols may depend on custom or legacy build logic that is not in nilabsent/master.
+
+### Current priority
+
+1. vlmcsd — inspect exact source and Makefile hook
+2. ndisc6 — inspect exact source and Makefile hook
+3. obfs4 — inspect package and toolchain dependencies
+4. sysfsutils — check whether it is required by the nilabsent USB/IP implementation
+5. mt7621_cpufreq — leave aside unless we explicitly decide to experiment with CPU frequency
+
+No firmware source code has been copied yet.
