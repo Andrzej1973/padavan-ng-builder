@@ -375,3 +375,34 @@ Updated high-priority candidate set for the user's active build.config:
 
 NFQWS remains excluded from this transfer list because nilabsent already provides nfqws/nfqws2 through its zapret and zapret2 packages.
 mt7621_cpufreq remains excluded for now because the user's option is commented.
+## Batch 17 — KMS/vlmcsd integration is a real missing source feature
+
+Using the current `hadzhioglu/padavan-ng` GitHub repository, the comparison found more than the standalone `vlmcsd` package:
+
+- `trunk/user/Makefile` adds `CONFIG_FIRMWARE_INCLUDE_VLMCSD -> vlmcsd`.
+- `trunk/user/shared/cflags.mk` adds `-DAPP_VLMCSD`.
+- `trunk/user/httpd/common.h` defines the event bit `EVM_RESTART_VLMCSD` and event type `EVT_RESTART_VLMCSD`.
+- `trunk/user/shared/notify_rc.h` defines `restart_vlmcsd`.
+- `trunk/user/rc/rc.h` declares the start/stop/restart functions.
+- `trunk/user/rc/services.c` implements the service lifecycle and starts/stops it with the normal services.
+- `trunk/user/rc/rc.c` handles the restart notification and restarts DHCPD as part of KMS configuration changes.
+- `trunk/user/rc/services_ex.c` publishes `_VLMCS._tcp` through dnsmasq when `vlmcsd_enable=1`.
+- `trunk/user/shared/defaults.c` provides `vlmcsd_enable=0` by default.
+- `trunk/user/httpd/variables.c` registers the NVRAM variable and the restart event.
+- `trunk/user/httpd/web_ex.c` exposes `found_app_vlmcsd` through the firmware capability hook.
+- current Hadzhioglu `Advanced_Services_Content.asp` has a KMS toggle using `vlmcsd_enable` and hides it when `found_app_vlmcsd()` is false.
+
+Current nilabsent/master has none of these `APP_VLMCSD` integration pieces. Therefore KMS is a confirmed source-level functionality gap between current Hadzhioglu and nilabsent, not merely a different package layout.
+
+### Experimental implementation
+
+The experimental branch now contains:
+
+- `overlay/padavan-ng/trunk/user/vlmcsd/Makefile`
+- `overlay/padavan-ng/trunk/user/vlmcsd/vlmcsd.sh`
+- `overlay/patches/0001-vlmcsd-integration.patch`
+- corresponding build hook in `pre-build.sh`
+
+The patch restores the backend/build integration and the firmware capability hook. The WebUI toggle itself is not yet copied; this is intentional until the current nilabsent Services page structure is reconciled with Hadzhioglu's page rather than replacing the newer nilabsent Services UI wholesale.
+
+Local static checks completed: `pre-build.sh` passes `sh -n`, and the three package Makefiles parse successfully with GNU make. No complete firmware build has been run yet.
