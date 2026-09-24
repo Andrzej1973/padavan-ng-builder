@@ -534,3 +534,54 @@ The scan also finds a much larger set of nilabsent-only parameters for DoH, DoT/
 At this stage the only simple, genuine H-only runtime file identified is `trunk/user/scripts/ld.so.conf`. Its content is only `/lib` and `/usr/lib`. Because the nilabsent toolchain has its own `CREATE_LDSO_CONF` machinery, it remains a validation candidate rather than a safe unconditional transplant.
 
 No H-only WebUI page, rc source file, httpd source file, service directory, or package implementation with demonstrated lost functionality has yet been found.
+
+## Batch 21 — source baseline clarification
+
+The requested project is hadzhioglu/padavan-ng. The directly accessible GitHub mirror is older than the current GitLab master. Current GitLab trunk/user shows commit 2cece89d from September 2026 and contains later packages such as sysfsutils and usbip. Use the same source revision for exact file-to-file comparisons; use GitLab-current only to detect later Hadzhioglu additions.
+
+## Batch 22 — package candidates rechecked
+
+H-only in the GitHub master package inventory: amneziawg, mt7621_cpufreq, ndisc6, nfqws, obfs4, socat, vlmcsd.
+nilabsent-only: firefly, redsocks, samba3, shadowsocks, zapret, zerotier.
+
+Classification:
+- vlmcsd: real Windows KMS server integration in Hadzhioglu; nilabsent has no equivalent source integration found. Strong candidate.
+- ndisc6: ndisc6/rdisc6 utilities; nilabsent has no standalone package. Good small candidate.
+- socat: generic relay/socket utility; nilabsent has no standalone package. Good small candidate.
+- obfs4: obfs4proxy package; Hadzhioglu uses a prebuilt Entware IPK, so ABI/runtime validation is required.
+- nfqws: functionally covered by nilabsent zapret/nfqws2. Do not copy.
+- amneziawg: nilabsent has its own newer integrated implementation. Do not copy.
+- mt7621_cpufreq: direct /dev/mem register access; option is commented in WR1200JS config. Keep disabled.
+
+## Batch 23 — active WR1200JS config versus nilabsent build hooks
+
+The experimental WR1200JS config actively enables USBIP, SOCAT, NDISC6_RDISC6, OBFS4 and VLMCSD.
+The current nilabsent trunk/user Makefile has no directory hooks for those packages. The experimental pre-build currently adds hooks only for VLMCSD, NDISC6 and SOCAT.
+This means the experiment still needs explicit USBIP and OBFS4 build integration if those config options are intended to produce user-space components. This is a build-system issue, not proof that a particular already-built firmware image lacks them.
+
+## Batch 24 — USB/IP
+
+nilabsent already contains the USB/IP kernel subsystem and historical userspace source under Linux staging, including usbipd and the vhci/host drivers.
+Current Hadzhioglu GitLab additionally contains dedicated trunk/user/usbip and trunk/user/sysfsutils packages; the GitLab package inventory describes sysfsutils specifically as supporting USB/IP userspace tools. This is a userspace/build integration difference, not a missing kernel feature. Current GitLab source inventory confirms both packages. citeturn994021search0
+Decision: investigate a minimal userspace/build port of usbip plus the required sysfsutils library. Do not copy the kernel USB/IP subtree.
+
+## Batch 25 — NFQWS
+
+Current Hadzhioglu has a standalone nfqws package based on Zapret 70.5. nilabsent already builds nfqws/nfqws2 through its zapret package and its zapret.sh supports runtime selection/download and POST_SCRIPT handling.
+Decision: no NFQWS transfer.
+
+## Batch 26 — MT7621 CPU frequency utility
+
+Current Hadzhioglu mt7621_cpufreq writes MT7621 clock registers through /dev/mem and supports a requested CPU frequency range of 600–1400 MHz.
+The WR1200JS config keeps CONFIG_FIRMWARE_INCLUDE_MT7621_CPUFREQ commented.
+Decision: do not port or enable it in this recovery branch.
+
+## Batch 27 — current recovery priorities
+
+1. vlmcsd/KMS
+2. ndisc6 + rdisc6
+3. socat
+4. usbip + sysfsutils
+5. obfs4 after ABI/runtime validation
+
+No whole-file replacement has been justified. Continue with minimal build/package integration and semantic comparison.
