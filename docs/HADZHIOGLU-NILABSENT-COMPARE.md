@@ -406,3 +406,60 @@ The experimental branch now contains:
 The patch restores the backend/build integration and the firmware capability hook. The WebUI toggle itself is not yet copied; this is intentional until the current nilabsent Services page structure is reconciled with Hadzhioglu's page rather than replacing the newer nilabsent Services UI wholesale.
 
 Local static checks completed: `pre-build.sh` passes `sh -n`, and the three package Makefiles parse successfully with GNU make. No complete firmware build has been run yet.
+
+## Batch 9 — WebUI Advanced_Tweaks_Content.asp / Advanced_Scripts_Content.asp
+
+The full line-level comparison shows these files are structurally identical between Hadzhioglu and nilabsent at the current refs, with only the menu-group indices changed because nilabsent inserted/reordered the Services/System groups in state.js.
+
+For Advanced_Tweaks_Content.asp:
+- Hadzhioglu: show_menu(5,8,1);
+- nilabsent: show_menu(5,9,1);
+
+For Advanced_Scripts_Content.asp:
+- Hadzhioglu: show_menu(5,8,2);
+- nilabsent: show_menu(5,9,2);
+
+No unique form fields or JavaScript functions were found on either side in the direct name/function comparison.
+
+Decision: no transfer. The pages are functionally the same; the changed menu index is part of nilabsent's menu layout.
+
+## Batch 10 — WebUI Advanced_Console_Content.asp
+
+The two files have the same functions, form fields and command execution flow. The meaningful differences are different show_menu() indices and minor textarea presentation changes: nilabsent makes the output vertically resizable, uses a different font/line-height, and uses rows=24 instead of 23.
+
+Decision: no transfer. No lost console capability identified.
+
+## Batch 11 — WebUI Advanced_System_Content.asp
+
+The page is nearly identical structurally. nilabsent adds a real WebUI helper ntpSyncNow() which calls /sbin/ntpc_syncnow through the generic sendSystemCmd() mechanism.
+
+A direct search found no corresponding ntpSyncNow() implementation in Hadzhioglu.
+
+Decision: KEEP nilabsent. This is a nilabsent enhancement, not a Hadzhioglu feature to recover.
+
+## Batch 12 — WebUI vpncli.asp
+
+This is a major expansion in nilabsent rather than a loss:
+- no Hadzhioglu-only JavaScript functions were found;
+- no Hadzhioglu-only form fields were found;
+- nilabsent adds OpenVPN configuration import;
+- nilabsent adds WireGuard key generation/import;
+- nilabsent adds AmneziaWG parameters and key/header-protection fields;
+- nilabsent adds VPN client access-control and IPSet selection;
+- nilabsent adds WireGuard post-script handling.
+
+The WireGuard option is gated by found_app_wg() and the AmneziaWG option by found_app_awg().
+
+Decision: DO NOT copy the Hadzhioglu file. The nilabsent version is more extensive in this area and is integrated with the current backend.
+
+## Batch 13 — WebUI vpnsrv.asp
+
+No Hadzhioglu-only functions or form fields were found in the direct comparison. nilabsent adds WireGuard server port/private/public/MTU/external-address fields, OpenVPN NCP cipher-list and TLS control options, WireGuard client key generation/export and QR export helpers, plus additional client-management UI.
+
+Decision: DO NOT copy the Hadzhioglu file.
+
+## Important interpretation
+
+The fact that a page is visibly different does not mean the firmware is missing something. The strongest confirmed differences so far are that nilabsent reorganizes the WebUI and adds helpers, substantially extends VPN/AmneziaWG support, and retains some old pages with only menu-index changes. No verified Hadzhioglu-only WebUI feature has yet been found that is absent from nilabsent.
+
+The next target is the full tree of scripts, binaries and config definitions under trunk/user and related build recipes. A service can exist without being exposed as a WebUI page, so this is the next place to look for genuinely missing or optional functionality.
