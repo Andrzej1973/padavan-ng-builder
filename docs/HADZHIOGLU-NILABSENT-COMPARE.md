@@ -678,3 +678,41 @@ The active custom options CONFIG_FIRMWARE_INCLUDE_IPERF3 and CONFIG_FIRMWARE_INC
 Current Hadzhioglu GitLab master has a recent httpd change titled 'Add stubby flags support into a WEB-interface' (commit f06555d0, about one month before this review). The current nilabsent tree already has a Stubby service, DoT WebUI page and Stubby NVRAM/service integration, but an exact source-level mapping of the newer Hadzhioglu flags change has not been established yet.
 
 Decision: do not copy anything yet. Treat this as a semantic WebUI comparison target after the package candidates are resolved.
+## Batch 37 — correction and current Hadzhioglu padavan-ng scripts comparison
+
+Earlier batches that referred to hadzhioglu/padavan-fw are historical and must not be used as the current padavan-ng baseline. The current comparison baseline for this branch is hadzhioglu/padavan-ng.
+
+A direct trunk/user/scripts inventory of current hadzhioglu/padavan-ng master versus nilabsent/master gives three Hadzhioglu-only files:
+
+- autostart.sh
+- banner
+- rwfs2ubi.sh
+
+### autostart.sh
+
+The file waits for Internet connectivity by pinging 1.1.1.1 and one.one.one.one, retrying for about 180 seconds, then exits.
+The current Hadzhioglu scripts Makefile installs it as /usr/bin/autostart.sh.
+A source search did not find a current caller in the inspected H or nilabsent source trees.
+Decision: investigate the invocation point first; do not copy yet. The file alone does not establish an automatic runtime feature.
+
+### banner
+
+The file is only ASCII artwork. The Hadzhioglu scripts Makefile installs /etc_ro/banner, and the H scripts/profile prints it for interactive shells.
+Decision: safe optional cosmetic transfer, but it adds no router functionality.
+
+### rwfs2ubi.sh
+
+The script formats a partition named RWFS as UBI/UBIFS, attaches it, creates an rwfs volume and sets mtd_rwfs_mount=1.
+The current WR1200JS partition layout used in this project is Bootloader/Config/Factory/Firmware/Storage and has no RWFS partition.
+Decision: do not copy to the WR1200JS branch.
+
+### Corrected current script inventory
+
+Path | H-only | WR1200JS decision
+--- | --- | ---
+trunk/user/scripts/autostart.sh | yes | investigate caller
+trunk/user/scripts/banner | yes | optional cosmetic
+trunk/user/scripts/rwfs2ubi.sh | yes | not applicable
+trunk/user/scripts/ld.so.conf | not treated as a current H-only padavan-ng gap | historical stale note; do not use
+
+This supersedes the earlier padavan-fw-based ld.so.conf and radvd notes for the current padavan-ng comparison.
