@@ -6,6 +6,19 @@ PADAVAN_DIR="$ROOTDIR/padavan-ng"
 OVERLAY_DIR="$ROOTDIR/overlay/padavan-ng"
 USER_MAKEFILE="$PADAVAN_DIR/trunk/user/Makefile"
 
+# Hadzhioglu keeps the vlmcsd source tree alongside its package.  The
+# builder repository is intentionally kept small, so fetch the same source
+# revision at build time before applying the overlay.
+VLMCSD_DIR="$OVERLAY_DIR/trunk/user/vlmcsd"
+VLMCSD_NAME="vlmcsd-svn1113"
+VLMCSD_URL="https://github.com/Wind4/vlmcsd/archive/svn1113.tar.gz"
+if [ ! -d "$VLMCSD_DIR/$VLMCSD_NAME" ]; then
+    mkdir -p "$VLMCSD_DIR"
+    wget -t5 --timeout=20 --no-check-certificate -O "$VLMCSD_DIR/$VLMCSD_NAME.tar.gz" "$VLMCSD_URL"
+    tar -C "$VLMCSD_DIR" -xf "$VLMCSD_DIR/$VLMCSD_NAME.tar.gz"
+    rm -f "$VLMCSD_DIR/$VLMCSD_NAME.tar.gz"
+fi
+
 # Apply only the experimental package overlay. clear_tree.sh does not
 # remove these source files, so the overlay remains available to the build.
 if [ -d "$OVERLAY_DIR" ]; then
