@@ -1,5 +1,4 @@
 diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
-index 0000000..0000000 100644
 --- a/trunk/user/httpd/common.h
 +++ b/trunk/user/httpd/common.h
 @@ -93,6 +93,7 @@
@@ -8,7 +7,6 @@ index 0000000..0000000 100644
 +#define EVM_RESTART_VLMCSD		(1ULL << 54)
  
  #define EVM_RELOAD_FIREWALL		(1ULL << 60)
- #define EVM_RESTART_REBOOT		(1ULL << 62)
 @@ -128,6 +129,7 @@
  #define EVT_RESTART_STUBBY		1
  #define EVT_RESTART_TOR			2
@@ -16,36 +14,33 @@ index 0000000..0000000 100644
 +#define EVT_RESTART_VLMCSD		1
  
  diff --git a/trunk/user/shared/cflags.mk b/trunk/user/shared/cflags.mk
- index 0000000..0000000 100644
- --- a/trunk/user/shared/cflags.mk
- +++ b/trunk/user/shared/cflags.mk
- @@ -244,6 +244,10 @@ ifeq ($(CONFIG_FIRMWARE_INCLUDE_OPENSSL_EC),y)
+--- a/trunk/user/shared/cflags.mk
++++ b/trunk/user/shared/cflags.mk
+@@ -244,6 +244,10 @@
  CFLAGS += -DSUPPORT_OPENSSL_EC
  endif
  
- +ifeq ($(CONFIG_FIRMWARE_INCLUDE_VLMCSD),y)
- +CFLAGS += -DAPP_VLMCSD
- +endif
- +
++ifeq ($(CONFIG_FIRMWARE_INCLUDE_VLMCSD),y)
++CFLAGS += -DAPP_VLMCSD
++endif
++
  ifeq ($(CONFIG_FIRMWARE_INCLUDE_IPERF3),y)
  CFLAGS += -DAPP_IPERF3
  endif
  diff --git a/trunk/user/shared/notify_rc.h b/trunk/user/shared/notify_rc.h
- index 0000000..0000000 100644
- --- a/trunk/user/shared/notify_rc.h
- +++ b/trunk/user/shared/notify_rc.h
- @@ -52,6 +52,7 @@
+--- a/trunk/user/shared/notify_rc.h
++++ b/trunk/user/shared/notify_rc.h
+@@ -52,6 +52,7 @@
  #define RCN_RESTART_PRIVOXY		"restart_privoxy"
  #define RCN_RESTART_DNSCRYPT		"restart_dnscrypt"
 +#define RCN_RESTART_VLMCSD		"restart_vlmcsd"
  #define RCN_RESTART_WINS		"restart_wins"
  #define RCN_RESTART_LLTD		"restart_lltd"
- #define RCN_RESTART_ADSC		"restart_adsc"
+@@ -567,6 +568,12 @@
  diff --git a/trunk/user/rc/rc.h b/trunk/user/rc/rc.h
- index 0000000..0000000 100644
- --- a/trunk/user/rc/rc.h
- +++ b/trunk/user/rc/rc.h
- @@ -567,6 +567,12 @@
+--- a/trunk/user/rc/rc.h
++++ b/trunk/user/rc/rc.h
+@@ -567,6 +567,12 @@
  void start_dnscrypt(void);
  void restart_dnscrypt(void);
  #endif
@@ -59,10 +54,9 @@ index 0000000..0000000 100644
  /* services_ex.c */
  int fill_dnsmasq_servers(void);
  diff --git a/trunk/user/rc/services.c b/trunk/user/rc/services.c
- index 0000000..0000000 100644
- --- a/trunk/user/rc/services.c
- +++ b/trunk/user/rc/services.c
- @@ -464,6 +464,34 @@ restart_dnscrypt(void)
+--- a/trunk/user/rc/services.c
++++ b/trunk/user/rc/services.c
+@@ -464,6 +464,34 @@
  }
  #endif
  
@@ -102,7 +96,7 @@ index 0000000..0000000 100644
  void
  start_httpd(int restart_fw)
  {
-@@ -680,6 +708,9 @@ start_services_once(int is_ap_mode)
+@@ -680,6 +708,9 @@
  #if defined(APP_ZAPRET)
  		start_zapret();
  #endif
@@ -112,7 +106,7 @@ index 0000000..0000000 100644
  #if defined(APP_PRIVOXY)
  		start_privoxy();
  #endif
-@@ -715,6 +746,9 @@ stop_services(int stopall)
+@@ -715,6 +746,9 @@
  #if defined(APP_DNSCRYPT)
  	stop_dnscrypt();
  #endif
@@ -122,14 +116,10 @@ index 0000000..0000000 100644
  #if defined(APP_ZAPRET)
  	stop_zapret();
  #endif
- 	stop_networkmap();
- 	stop_lltd();
- 	stop_detect_internet();
  diff --git a/trunk/user/rc/rc.c b/trunk/user/rc/rc.c
- index 0000000..0000000 100644
- --- a/trunk/user/rc/rc.c
- +++ b/trunk/user/rc/rc.c
- @@ -1311,6 +1311,12 @@
+--- a/trunk/user/rc/rc.c
++++ b/trunk/user/rc/rc.c
+@@ -1311,6 +1311,12 @@
  		{
  			restart_zram();
  		}
@@ -145,10 +135,9 @@ index 0000000..0000000 100644
  		{
  			restart_lltd();
  diff --git a/trunk/user/rc/services_ex.c b/trunk/user/rc/services_ex.c
- index 0000000..0000000 100644
- --- a/trunk/user/rc/services_ex.c
- +++ b/trunk/user/rc/services_ex.c
- @@ -544,6 +544,11 @@
+--- a/trunk/user/rc/services_ex.c
++++ b/trunk/user/rc/services_ex.c
+@@ -544,6 +544,11 @@
  #if defined(APP_SMBD) || defined(APP_NMBD)
  		else if (nvram_get_int("wins_enable"))
  			fprintf(fp, "dhcp-option=tag:%s,%d,%s\n", DHCPD_RANGE_DEF_TAG, 44, ipaddr);
@@ -161,10 +150,9 @@ index 0000000..0000000 100644
  			fprintf(fp, "quiet-dhcp\n");
  
  diff --git a/trunk/user/shared/defaults.c b/trunk/user/shared/defaults.c
- index 0000000..0000000 100644
- --- a/trunk/user/shared/defaults.c
- +++ b/trunk/user/shared/defaults.c
- @@ -660,6 +660,9 @@
+--- a/trunk/user/shared/defaults.c
++++ b/trunk/user/shared/defaults.c
+@@ -660,6 +660,9 @@
  	{ "dnscrypt_mode", "1" },
  #endif
 +#if defined (APP_VLMCSD)
@@ -174,10 +162,9 @@ index 0000000..0000000 100644
  	{ "adsc_enable", "0" },
  	{ "crond_enable", "0" },
  diff --git a/trunk/user/httpd/variables.c b/trunk/user/httpd/variables.c
- index 0000000..0000000 100644
- --- a/trunk/user/httpd/variables.c
- +++ b/trunk/user/httpd/variables.c
- @@ -127,6 +127,9 @@
+--- a/trunk/user/httpd/variables.c
++++ b/trunk/user/httpd/variables.c
+@@ -127,6 +127,9 @@
  #if defined (USE_NAND_FLASH)
  			{"mtd_rwfs_mount", "", NULL, FALSE},
  #endif
@@ -187,7 +174,7 @@ index 0000000..0000000 100644
  			{"http_username", "", NULL, EVM_RESTART_CROND|EVM_BLOCK_UNSAFE},
  			{"http_passwd", "", NULL, EVM_BLOCK_UNSAFE},
  			{"modem_rule", "", NULL, EVM_RESTART_MODEM},
- @@ -1051,6 +1054,9 @@
+@@ -1051,6 +1054,9 @@
  #if defined(APP_DNSCRYPT)
  		{EVM_RESTART_DNSCRYPT,		EVT_RESTART_DNSCRYPT,		RCN_RESTART_DNSCRYPT,		EVM_RESTART_FIREWALL},
  #endif
@@ -196,10 +183,9 @@ index 0000000..0000000 100644
 +#endif
  		{EVM_RESTART_TELNETD,		EVT_RESTART_TELNETD,		RCN_RESTART_TELNETD,		0},
  diff --git a/trunk/user/httpd/web_ex.c b/trunk/user/httpd/web_ex.c
- index 0000000..0000000 100644
- --- a/trunk/user/httpd/web_ex.c
- +++ b/trunk/user/httpd/web_ex.c
- @@ -2160,6 +2160,11 @@
+--- a/trunk/user/httpd/web_ex.c
++++ b/trunk/user/httpd/web_ex.c
+@@ -2160,6 +2160,11 @@
  #else
  	int found_app_xupnpd = 0;
  #endif
@@ -211,13 +197,13 @@ index 0000000..0000000 100644
  #if defined(SUPPORT_ZRAM)
  	int found_support_zram = 1;
  #else
- @@ -2191,6 +2196,7 @@
+@@ -2191,6 +2191,7 @@
  		"function found_app_privoxy() { return %d;}\n"
  		"function found_app_dnscrypt() { return %d;}\n"
 +		"function found_app_vlmcsd() { return %d;}\n"
  		"function found_support_wpad() { return %d;}\n"
  		"function found_support_zram() { return %d;}\n"
- @@ -2205,6 +2211,7 @@
+@@ -2205,6 +2206,7 @@
  		found_app_tor,
  		found_app_privoxy,
  		found_app_dnscrypt,
@@ -226,17 +212,16 @@ index 0000000..0000000 100644
  		found_support_zram,
  		found_support_ipset,
  diff --git a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
- index 0000000..0000000 100644
- --- a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
- +++ b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
- @@ -27,6 +27,7 @@
+--- a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
++++ b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
+@@ -27,6 +27,7 @@
  	init_itoggle('lltd_enable');
  	init_itoggle('adsc_enable');
  	init_itoggle('crond_enable', change_crond_enabled);
 +	init_itoggle('vlmcsd_enable');
  	init_itoggle('watchdog_cpu');
  });
- @@ -88,6 +89,9 @@
+@@ -88,6 +89,9 @@
  	}
  	change_crond_enabled();
 +
@@ -245,7 +230,7 @@ index 0000000..0000000 100644
  }
  
  function applyRule(){
- @@ -531,6 +535,19 @@
+@@ -531,6 +535,19 @@
  							</td>
  						</tr>
 +						<tr id="row_vlmcsd">
