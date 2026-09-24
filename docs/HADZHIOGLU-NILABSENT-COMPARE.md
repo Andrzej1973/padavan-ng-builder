@@ -647,3 +647,34 @@ Current status after the re-check:
 - MT7621 CPUFREQ: low-level /dev/mem utility and disabled in config; no transfer.
 
 No production firmware source has been replaced. The experimental branch remains the safe comparison/work area.
+## Batch 33 — optional packages that are already present in nilabsent
+
+Several options enabled in the custom WR1200JS config are not missing from nilabsent even though its default WR1200JS template leaves them disabled:
+- IPERF3: nilabsent has a dedicated iperf3 package and a user Makefile hook.
+- QRencode: nilabsent has libqrencode and installs /usr/bin/qrencode; WireGuard uses it for QR output.
+- Shadowsocks redirection/local: nilabsent has the shadowsocks package and the corresponding SSREDIR/SSLOCAL build switches.
+- redsocks2: nilabsent has a dedicated redsocks package and library dependency wiring.
+- ZeroTier: nilabsent has a dedicated zerotier package.
+
+Decision: these are configuration-selection differences, not missing-source problems. Do not import Hadzhioglu code for them.
+
+## Batch 34 — build workflow provenance
+
+The experimental workflow clones the nilabsent repository and then executes the custom pre-build script before building the firmware. Therefore the branch is intentionally a nilabsent base with Hadzhioglu-derived overlays/patches, not a fork that silently replaces the base tree.
+
+The custom WR1200JS config is copied into padavan-ng/trunk/.config. The pre-build script then copies the overlay and applies the VLMCSD patch. This means any Hadzhioglu-only package must have both source files in the overlay and a matching user Makefile hook before the active config option can actually produce that package in the firmware.
+
+Current implemented overlay packages: ndisc6, socat and vlmcsd.
+Current not-yet-implemented H-only active package paths: obfs4 and usbip/sysfsutils.
+
+Decision: keep the current architecture. Complete package overlays first, then run a real firmware build and inspect the produced rootfs/image before promoting any change.
+
+## Batch 35 — iPerf3/QRcode conclusion
+
+The active custom options CONFIG_FIRMWARE_INCLUDE_IPERF3 and CONFIG_FIRMWARE_INCLUDE_QRENCODE do not require Hadzhioglu recovery. Their implementation is already in nilabsent, so keeping them enabled is a valid feature-selection choice.
+
+## Batch 36 — Stubby watch item
+
+Current Hadzhioglu GitLab master has a recent httpd change titled 'Add stubby flags support into a WEB-interface' (commit f06555d0, about one month before this review). The current nilabsent tree already has a Stubby service, DoT WebUI page and Stubby NVRAM/service integration, but an exact source-level mapping of the newer Hadzhioglu flags change has not been established yet.
+
+Decision: do not copy anything yet. Treat this as a semantic WebUI comparison target after the package candidates are resolved.
