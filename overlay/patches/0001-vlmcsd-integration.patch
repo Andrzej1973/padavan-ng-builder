@@ -184,10 +184,10 @@ index 0000000..0000000 100644
 +#if defined (APP_VLMCSD)
 +			{"vlmcsd_enable", "", NULL, EVM_RESTART_VLMCSD},
 +#endif
- 			{"http_username", "", NULL, NULL, FALSE},
- 			{"http_passwd", "", NULL, NULL, FALSE},
+ 			{"http_username", "", NULL, EVM_RESTART_CROND|EVM_BLOCK_UNSAFE},
+ 			{"http_passwd", "", NULL, EVM_BLOCK_UNSAFE},
  			{"modem_rule", "", NULL, EVM_RESTART_MODEM},
-@@ -1051,6 +1054,9 @@
+ @@ -1051,6 +1054,9 @@
  #if defined(APP_DNSCRYPT)
  		{EVM_RESTART_DNSCRYPT,		EVT_RESTART_DNSCRYPT,		RCN_RESTART_DNSCRYPT,		EVM_RESTART_FIREWALL},
  #endif
@@ -211,13 +211,13 @@ index 0000000..0000000 100644
  #if defined(SUPPORT_ZRAM)
  	int found_support_zram = 1;
  #else
-@@ -2191,6 +2196,7 @@
+ @@ -2191,6 +2196,7 @@
  		"function found_app_privoxy() { return %d;}\n"
  		"function found_app_dnscrypt() { return %d;}\n"
 +		"function found_app_vlmcsd() { return %d;}\n"
  		"function found_support_wpad() { return %d;}\n"
  		"function found_support_zram() { return %d;}\n"
-@@ -2205,6 +2211,7 @@
+ @@ -2205,6 +2211,7 @@
  		found_app_tor,
  		found_app_privoxy,
  		found_app_dnscrypt,
@@ -245,7 +245,7 @@ index 0000000..0000000 100644
  }
  
  function applyRule(){
- @@ -531,6 +535,25 @@
+ @@ -531,6 +535,19 @@
  							</td>
  						</tr>
 +						<tr id="row_vlmcsd">
