@@ -503,3 +503,34 @@ Across the differing `rc` files checked so far, no Hadzhioglu-only C function wa
 Across the differing `httpd` files checked so far, no Hadzhioglu-only C function was found. nilabsent adds functions such as `net_iface_list_hook` and `leases_wireguard_server`.
 
 **Decision: no transfer candidate from these function-name differences.** The remaining work is to inspect semantic differences in the few files that have equal function sets but different implementations, then continue through other common-package directories.
+
+
+## Batch 18 — package-level file comparison
+
+The common package directories checked so far contain no straightforward Hadzhioglu-only implementation files that are absent from nilabsent.
+
+Notable cases:
+- `uqmi`: nilabsent adds newer WDA/MBIM/UIM source files and RAW-IP related support; H does not have a unique feature candidate here.
+- `usb-modeswitch`: Hadzhioglu has unpacked legacy source files while nilabsent carries newer source as versioned tarballs. This is a packaging/layout difference, not proof of a missing feature.
+- `strongswan`: H has only `.gitignore` as an extra top-level file while nilabsent carries the versioned source tarball; no transfer candidate.
+- `tor`: H-only `getgeoip.sh` and `mmdb-convert.py` are accompanied in nilabsent by packaged GeoIP databases and newer Tor source; do not copy them blindly.
+- `radvd`: H has a Makefile at the package root, but no current corresponding implementation was found by direct search; this needs deeper build-history analysis rather than file copying.
+- `hdparm`: H-only `sysfs.h` occurs alongside a substantially reworked/newer nilabsent hdparm source set. No H-only feature has been established.
+
+## Batch 19 — WebUI parameter scan
+
+A parameter-name scan of `httpd/variables.c` and `shared/defaults.c` finds five Hadzhioglu-only DNSCrypt names:
+
+`dnscrypt_resolver`, `dnscrypt_ipaddr`, `dnscrypt_port`, `dnscrypt_force_dns`, `dnscrypt_options`.
+
+These are not currently exposed as an actually missing feature in nilabsent. The nilabsent WebUI instead uses the newer DNSCrypt model with `dnscrypt_resolver0..3`, `dnscrypt_listen_mode`, `dnscrypt_listen_port`, and `dnscrypt_mode`, with the WebUI page `Advanced_Services_DNSCrypt.asp`. So this looks like a parameter-model migration, not a lost service.
+
+The scan also finds a much larger set of nilabsent-only parameters for DoH, DoT/Stubby, Zapret, Tor client/IPSet control, WireGuard and AmneziaWG.
+
+**Decision: do not restore the old DNSCrypt names.** A compatibility migration would only be justified if old NVRAM configurations need to be imported into the new layout.
+
+## Batch 20 — current strongest H-only candidate
+
+At this stage the only simple, genuine H-only runtime file identified is `trunk/user/scripts/ld.so.conf`. Its content is only `/lib` and `/usr/lib`. Because the nilabsent toolchain has its own `CREATE_LDSO_CONF` machinery, it remains a validation candidate rather than a safe unconditional transplant.
+
+No H-only WebUI page, rc source file, httpd source file, service directory, or package implementation with demonstrated lost functionality has yet been found.
