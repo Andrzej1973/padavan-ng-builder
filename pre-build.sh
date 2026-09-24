@@ -6,7 +6,7 @@ PADAVAN_DIR="$ROOTDIR/padavan-ng"
 OVERLAY_DIR="$ROOTDIR/overlay/padavan-ng"
 USER_MAKEFILE="$PADAVAN_DIR/trunk/user/Makefile"
 
-# Hadzhioglu keeps the vlmcsd source tree alongside its package.  The
+# Hadzhioglu keeps the vlmcsd source tree alongside its package. The
 # builder repository is intentionally kept small, so fetch the same source
 # revision at build time before applying the overlay.
 VLMCSD_DIR="$OVERLAY_DIR/trunk/user/vlmcsd"
@@ -27,6 +27,10 @@ fi
 
 PATCH_FILE="$ROOTDIR/overlay/patches/0001-vlmcsd-integration.patch"
 if [ -f "$PATCH_FILE" ]; then
+    # Keep the patch readable in the repository while normalizing section
+    # headers before patch(1). This also tolerates accidental indentation in
+    # generated patch text.
+    sed -i -e 's/^ diff --git/diff --git/' -e 's/^ @@/@@/' "$PATCH_FILE"
     patch -d "$PADAVAN_DIR" -p1 --forward < "$PATCH_FILE"
 fi
 
