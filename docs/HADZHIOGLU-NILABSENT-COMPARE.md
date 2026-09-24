@@ -463,3 +463,43 @@ Decision: DO NOT copy the Hadzhioglu file.
 The fact that a page is visibly different does not mean the firmware is missing something. The strongest confirmed differences so far are that nilabsent reorganizes the WebUI and adds helpers, substantially extends VPN/AmneziaWG support, and retains some old pages with only menu-index changes. No verified Hadzhioglu-only WebUI feature has yet been found that is absent from nilabsent.
 
 The next target is the full tree of scripts, binaries and config definitions under trunk/user and related build recipes. A service can exist without being exposed as a WebUI page, so this is the next place to look for genuinely missing or optional functionality.
+
+
+## Batch 14 — `trunk/user/scripts/ld.so.conf` (first real Hadzhioglu-only file)
+
+Directory-level comparison of `trunk/user/scripts` found one file present in Hadzhioglu and absent in nilabsent: `ld.so.conf`.
+
+Hadzhioglu file content is only:
+
+```text
+/lib
+/usr/lib
+```
+
+Hadzhioglu's `scripts/Makefile` installs it as `/etc_ro/ld.so.conf`. nilabsent's `scripts/Makefile` no longer installs this file; instead its newer toolchain has its own `CREATE_LDSO_CONF` machinery and generates a target/sysroot `ld.so.conf` when shared libraries are used.
+
+**Decision: 🟡 do not transfer yet.** The file is genuinely absent, but its two search paths are standard/default on this uClibc target and we have not demonstrated a lost runtime dependency on WR1200JS. Copying it blindly could be redundant. This is the first genuine Hadzhioglu-only file and remains a candidate for runtime validation rather than immediate import.
+
+## Batch 15 — package/directory level
+
+The top-level `trunk/user` directory contains 64 subdirectories in the Hadzhioglu tree and 77 in nilabsent. There is no top-level package directory found only in Hadzhioglu; nilabsent adds packages such as `adb`, `doh_proxy`, `eoip-ctl`, `iperf3`, `redsocks`, `shadowsocks`, `stubby`, `wireguard`, `zapret`, and `zerotier`.
+
+This is strong evidence that the current search should concentrate on individual files inside common packages and on build/config wiring, rather than looking for an entire missing application directory.
+
+## Batch 16 — KMS/VLMCSD clarification
+
+The WR1200JS configuration used in the user's builder contains `CONFIG_FIRMWARE_INCLUDE_VLMCSD=y`. The same option is present in the old WR1200JS build configuration and the current nilabsent-derived WR1200JS configuration.
+
+However, the current `nilabsent/padavan-ng` source tree does not contain a `vlmcsd` source/package directory, and its `trunk/user/Makefile` has no `vlmcsd` build/install directory tied to this option. The current build firmware script also has no `VLMCSD`/`vlmcsd` handling in the searched sections.
+
+Therefore the configuration flag by itself is not evidence that a KMS server is actually built into the image. It appears to be a legacy/inherited option whose implementation came from another Padavan package/builder lineage. This explains why a WR1200JS config can show `CONFIG_FIRMWARE_INCLUDE_VLMCSD=y` while the resulting WebUI/source tree has no KMS implementation.
+
+**Decision: 🔴 do not import arbitrary KMS code from another fork yet.** First identify the exact old source/package that supplied the working `vlmcsd` binary and its startup/WebUI integration. The KMS issue is now separated from the Hadzhioglu-vs-nilabsent source comparison.
+
+## Batch 17 — function-level scan of common `rc` and `httpd` files
+
+Across the differing `rc` files checked so far, no Hadzhioglu-only C function was found. nilabsent-only additions include `restore_app_rules`, `load_ipset_modules`, `reapply_vpn_client`, `ntpc_syncnow_main`, and additional DNSCrypt/DoH/Stubby/Zapret/Tor handling.
+
+Across the differing `httpd` files checked so far, no Hadzhioglu-only C function was found. nilabsent adds functions such as `net_iface_list_hook` and `leases_wireguard_server`.
+
+**Decision: no transfer candidate from these function-name differences.** The remaining work is to inspect semantic differences in the few files that have equal function sets but different implementations, then continue through other common-package directories.
