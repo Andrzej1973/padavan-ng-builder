@@ -716,3 +716,87 @@ trunk/user/scripts/rwfs2ubi.sh | yes | not applicable
 trunk/user/scripts/ld.so.conf | not treated as a current H-only padavan-ng gap | historical stale note; do not use
 
 This supersedes the earlier padavan-fw-based ld.so.conf and radvd notes for the current padavan-ng comparison.
+## Batch 38 — CURRENT padavan-ng WebUI: real H-only controls
+
+A direct current `padavan-ng` comparison of `Advanced_Services_Content.asp` shows a more meaningful difference than the earlier old-repository comparison.
+
+Hadzhioglu has these service variables in this page that nilabsent does not expose on the corresponding WebUI page:
+- `vlmcsd_enable` (KMS server)
+- `iperf3_enable` (iperf3 server)
+
+For Tor, Privoxy, DNSCrypt, DoH, DoT/Stubby and Zapret, H's monolithic Services page is larger, but nilabsent has reorganized those controls into dedicated service pages. Those are therefore not treated as lost features.
+
+### `iperf3_enable`
+
+This one is different from the moved services. Current Hadzhioglu has:
+- `APP_IPERF3` build flag and user package `trunk/user/iperf3`;
+- `iperf3_enable` NVRAM variable and default;
+- `EVM_RESTART_IPERF3` / `RCN_RESTART_IPERF3` notification wiring;
+- start/stop/restart logic in `rc/services.c`;
+- `found_app_iperf3()` capability hook in `httpd/web_ex.c`;
+- an `Advanced_Services_Content.asp` enable control;
+- `iperf3.sh` which starts the server and stops it.
+
+nilabsent already has the `iperf3` binary/package and a `CONFIG_FIRMWARE_INCLUDE_IPERF3` user Makefile hook, but the compared nilabsent `rc`, `variables.c`, `defaults.c` and Services WebUI do not contain the corresponding `iperf3_enable` service control.
+
+**Decision: 🟡 genuine functional candidate.** It is not safe to copy only the ASP row. The minimum complete port is the service script + NVRAM/default + rc notification/service lifecycle + capability hook + a small WebUI addition, while keeping nilabsent's existing iperf3 package.
+
+### `vlmcsd_enable`
+
+The KMS control is the analogous genuine service gap. The experimental branch already contains the minimal backend/package overlay for VLMCSD, but the patch intentionally needs to be reconciled with the current nilabsent service page rather than replacing the entire page.
+
+**Decision: 🟡 continue with the existing minimal KMS port.**
+
+## Batch 39 — `Advanced_System_Content.asp`: three distinct H-only functions
+
+Current Hadzhioglu has three additional system controls that are absent from the compared nilabsent System page and are backed by real code:
+
+### Reboot scheduler
+
+H has `reboot_schedule_enable` and `reboot_schedule` in `httpd/variables.c` and `shared/defaults.c`, a full WebUI editor in `Advanced_System_Content.asp`, and `timecheck_reboot()` inside `rc/watchdog.c`. The watchdog checks the configured seven-day/time bitmap after NTP is ready and calls `sys_exit()` when the configured time matches.
+
+nilabsent has no corresponding variables/defaults/WebUI fields and no `timecheck_reboot()` block.
+
+**Decision: 🟡 genuine feature gap and a good candidate for a later minimal port.** It is more involved than a WebUI-only addition because the runtime watchdog logic is required.
+
+### Four NTP servers instead of two
+
+H `watchdog.c` uses `ntp_server0`, `ntp_server1`, `ntp_server2`, and `ntp_server3` with fallback across all four. H also registers `ntp_server2` and `ntp_server3` and exposes them in the System page.
+
+nilabsent uses only `ntp_server0` and `ntp_server1` in the same NTP selection path.
+
+**Decision: 🟡 genuine backend/UI difference.** A safe port should change only the NTP server array/variables/defaults/UI, not replace the whole watchdog file.
+
+### ZRAM compression selector
+
+H exposes `zram_clzx` in NVRAM and WebUI with LZO/LZ4 choices. nilabsent's `services.c` still reads `zram_clzx` and has the same LZO/LZ4 selection array, but nilabsent's `variables.c`, `defaults.c` and System page do not expose it.
+
+**Decision: 🟢 small candidate.** This is a partial UI/config gap rather than a missing runtime implementation. The existing nilabsent runtime already understands the selector, so only the variable/default/WebUI layer needs careful restoration and testing.
+
+## Batch 40 — current package inventory correction
+
+The current Hadzhioglu `trunk/user/Makefile` explicitly includes `CONFIG_FIRMWARE_INCLUDE_IPERF3 -> iperf3`. The package contains `iperf-3.15`, `iperf3.sh`, and its Makefile. Therefore `iperf3` must be treated as a current Hadzhioglu package-level comparison target even though an earlier top-level inventory pass failed to list it.
+
+For the current GitHub `hadzhioglu/padavan-ng` master, the H-only package set relevant to this branch is:
+- `amneziawg`
+- `mt7621_cpufreq`
+- `ndisc6`
+- `nfqws`
+- `obfs4`
+- `socat`
+- `vlmcsd`
+- `iperf3`
+
+nilabsent already has its own implementations for iperf3, WireGuard/AmneziaWG-related functions, Zapret/nfqws and several proxy packages. Only genuine missing service/build layers are candidates for recovery.
+
+## Batch 41 — immediate next candidates
+
+The next implementation-safe comparison order is now:
+1. `iperf3_enable` service/UI layer, because the binary already exists in nilabsent and the H service code is self-contained.
+2. `zram_clzx` WebUI/config layer, because nilabsent already has the runtime selector.
+3. Four-server NTP support (`ntp_server2/3`).
+4. Reboot scheduler (`reboot_schedule_*`) after checking all watchdog/event interactions.
+5. USB/IP userspace + sysfsutils.
+6. OBFS4 package/runtime integration.
+
+No existing nilabsent file has been replaced wholesale.
