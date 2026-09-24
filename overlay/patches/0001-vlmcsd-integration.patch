@@ -27,6 +27,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  ifeq ($(CONFIG_FIRMWARE_INCLUDE_IPERF3),y)
  CFLAGS += -DAPP_IPERF3
  endif
+
  diff --git a/trunk/user/shared/notify_rc.h b/trunk/user/shared/notify_rc.h
 --- a/trunk/user/shared/notify_rc.h
 +++ b/trunk/user/shared/notify_rc.h
@@ -36,7 +37,8 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
 +#define RCN_RESTART_VLMCSD		"restart_vlmcsd"
  #define RCN_RESTART_WINS		"restart_wins"
  #define RCN_RESTART_LLTD		"restart_lltd"
-@@ -567,6 +568,12 @@
+ #define RCN_RESTART_ADSC		"restart_adsc"
+
  diff --git a/trunk/user/rc/rc.h b/trunk/user/rc/rc.h
 --- a/trunk/user/rc/rc.h
 +++ b/trunk/user/rc/rc.h
@@ -53,6 +55,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  
  /* services_ex.c */
  int fill_dnsmasq_servers(void);
+
  diff --git a/trunk/user/rc/services.c b/trunk/user/rc/services.c
 --- a/trunk/user/rc/services.c
 +++ b/trunk/user/rc/services.c
@@ -116,6 +119,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  #if defined(APP_ZAPRET)
  	stop_zapret();
  #endif
+
  diff --git a/trunk/user/rc/rc.c b/trunk/user/rc/rc.c
 --- a/trunk/user/rc/rc.c
 +++ b/trunk/user/rc/rc.c
@@ -134,6 +138,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  		else if (strcmp(entry->d_name, RCN_RESTART_LLTD) == 0)
  		{
  			restart_lltd();
+
  diff --git a/trunk/user/rc/services_ex.c b/trunk/user/rc/services_ex.c
 --- a/trunk/user/rc/services_ex.c
 +++ b/trunk/user/rc/services_ex.c
@@ -148,7 +153,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
 +#endif
  		if (i_verbose == 0 || i_verbose == 2)
  			fprintf(fp, "quiet-dhcp\n");
- 
+
  diff --git a/trunk/user/shared/defaults.c b/trunk/user/shared/defaults.c
 --- a/trunk/user/shared/defaults.c
 +++ b/trunk/user/shared/defaults.c
@@ -161,6 +166,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  	{ "lltd_enable", "1" },
  	{ "adsc_enable", "0" },
  	{ "crond_enable", "0" },
+
  diff --git a/trunk/user/httpd/variables.c b/trunk/user/httpd/variables.c
 --- a/trunk/user/httpd/variables.c
 +++ b/trunk/user/httpd/variables.c
@@ -182,6 +188,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
 +		{EVM_RESTART_VLMCSD,		EVT_RESTART_VLMCSD,		RCN_RESTART_VLMCSD,		EVM_RESTART_DHCPD},
 +#endif
  		{EVM_RESTART_TELNETD,		EVT_RESTART_TELNETD,		RCN_RESTART_TELNETD,		0},
+
  diff --git a/trunk/user/httpd/web_ex.c b/trunk/user/httpd/web_ex.c
 --- a/trunk/user/httpd/web_ex.c
 +++ b/trunk/user/httpd/web_ex.c
@@ -211,6 +218,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  		found_support_wpad,
  		found_support_zram,
  		found_support_ipset,
+
  diff --git a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
 --- a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
 +++ b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
@@ -248,4 +256,3 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
 +							</td>
 +						</tr>
  						<tr id="row_crontabs" style="display:none">
-
