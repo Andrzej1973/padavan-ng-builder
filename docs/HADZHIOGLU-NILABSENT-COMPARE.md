@@ -585,3 +585,65 @@ Decision: do not port or enable it in this recovery branch.
 5. obfs4 after ABI/runtime validation
 
 No whole-file replacement has been justified. Continue with minimal build/package integration and semantic comparison.
+## Batch 28 — WR1200JS configuration drift
+
+The custom WR1200JS config in this repository is not the same as the current nilabsent WR1200JS template. Several options are deliberately enabled in the custom config while the nilabsent template leaves them disabled or omits their symbols.
+
+Notable active custom options with no corresponding active/default entry in the current nilabsent WR1200JS template are:
+- CPU sleep
+- USB-HID
+- QoS, IMQ and IFB
+- IPERF3
+- NDISC6/RDISC6
+- OBFS4
+- SOCAT
+- USBIP
+- VLMCSD
+- TOR and TOR GeoIP/GeoIPv6
+- Privoxy
+- QRencode
+- Redsocks2
+- Shadowsocks local/redirection
+- ZeroTier
+
+Conversely, the current nilabsent WR1200JS template enables some packages that the custom config leaves off, notably Aria2, Aria2 Web Control, CIFS, FTPD, Minidlna, OpenVPN, SFTP, SMB2, Transmission and XUPNPD.
+
+This confirms that the custom config is a feature-selection profile, not a reliable indicator of what the base source tree supports. The correct next step is to verify each custom-only enabled option against its actual package/build hook.
+
+## Batch 29 — ld.so.conf validation
+
+Hadzhioglu scripts/Makefile installs a small /etc_ro/ld.so.conf containing /lib and /usr/lib. The current nilabsent scripts/Makefile does not install that file.
+
+Current nilabsent nevertheless contains the toolchain-level CREATE_LDSO_CONF mechanism, which generates an ld.so.conf for the toolchain/sysroot when enabled. This does not by itself prove that the firmware runtime rootfs receives the same file.
+
+Decision: keep ld.so.conf as a validation item. Do not copy it merely because the filename is H-only; first verify the generated WR1200JS image's /etc_ro and dynamic-loader behavior.
+
+## Batch 30 — current Hadzhioglu source inventory
+
+Current Hadzhioglu GitLab master is ahead of the older GitHub mirror and currently lists these additional user packages relevant to this comparison: amneziawg, mt7621_cpufreq, ndisc6, nfqws, obfs4, socat, sysfsutils, usbip and vlmcsd. Its current trunk/user page shows commit 2cece89d from September 2026. citeturn302978search0
+
+These current GitLab additions map well to the custom WR1200JS options: NDISC6_RDISC6, OBFS4, SOCAT, USBIP and VLMCSD.
+
+Decision: for exact code transplantation use a fixed source revision; for feature inventory use current Hadzhioglu GitLab master. Do not mix a newer package implementation into a comparison without recording its source revision.
+
+## Batch 31 — USB/IP implementation boundary
+
+nilabsent already contains the USB/IP kernel subsystem and the historical userspace source under drivers/staging/usbip/userspace, including usbipd and the vhci/host components. The missing part is not the kernel driver source.
+
+Current Hadzhioglu adds a dedicated firmware-user package and a sysfsutils package specifically for USB/IP userspace. This makes the most appropriate transfer target the userspace/build integration rather than the kernel subtree.
+
+Decision: 🟡 candidate for a minimal package/build port. Further work should identify the exact Makefile dependency chain and required libraries before changing the experimental branch.
+
+## Batch 32 — package recovery status
+
+Current status after the re-check:
+- VLMCSD/KMS: confirmed source-level H feature with full service/backend/WebUI integration; experimental overlay exists but remains unbuilt.
+- NDISC6/RDISC6: small standalone H package; good candidate.
+- SOCAT: small standalone H package; good candidate.
+- USBIP + sysfsutils: current H userspace/build addition; nilabsent kernel capability already present; good candidate for a minimal userspace integration.
+- OBFS4: H package downloads a prebuilt Entware binary; candidate, but ABI/runtime validation required.
+- NFQWS: already represented by nilabsent Zapret/nfqws2; no transfer.
+- AmneziaWG: already represented by nilabsent's newer AWG integration; no transfer.
+- MT7621 CPUFREQ: low-level /dev/mem utility and disabled in config; no transfer.
+
+No production firmware source has been replaced. The experimental branch remains the safe comparison/work area.
