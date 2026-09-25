@@ -19,6 +19,26 @@ if [ ! -d "$VLMCSD_DIR/$VLMCSD_NAME" ]; then
     rm -f "$VLMCSD_DIR/$VLMCSD_NAME.tar.gz"
 fi
 
+# Import only the Hadzhioglu userspace USB/IP implementation. The nilabsent
+# tree already supplies the kernel USB/IP support, so we deliberately do not
+# replace any kernel sources. A sparse clone keeps the experimental builder
+# small while preserving the upstream package layout exactly.
+HADZHI_TMP="$ROOTDIR/.hadzhioglu-usbip"
+if [ ! -d "$PADAVAN_DIR/trunk/user/usbip" ] || [ ! -d "$PADAVAN_DIR/trunk/user/sysfsutils" ]; then
+    rm -rf "$HADZHI_TMP"
+    if ! command -v git >/dev/null 2>&1; then
+        echo "ERROR: git is required to import Hadzhioglu usbip/sysfsutils" >&2
+        exit 1
+    fi
+    git clone --depth 1 --filter=blob:none --sparse https://gitlab.com/hadzhioglu/padavan-ng.git "$HADZHI_TMP"
+    git -C "$HADZHI_TMP" sparse-checkout set trunk/user/usbip trunk/user/sysfsutils
+    mkdir -p "$PADAVAN_DIR/trunk/user"
+    rm -rf "$PADAVAN_DIR/trunk/user/usbip" "$PADAVAN_DIR/trunk/user/sysfsutils"
+    cp -a "$HADZHI_TMP/trunk/user/usbip" "$PADAVAN_DIR/trunk/user/"
+    cp -a "$HADZHI_TMP/trunk/user/sysfsutils" "$PADAVAN_DIR/trunk/user/"
+    rm -rf "$HADZHI_TMP"
+fi
+
 # Apply only the experimental package overlay. clear_tree.sh does not
 # remove these source files, so the overlay remains available to the build.
 if [ -d "$OVERLAY_DIR" ]; then
@@ -46,9 +66,12 @@ append_make_dir() {
 append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_VLMCSD) += vlmcsd'
 append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_NDISC6_RDISC6) += ndisc6'
 append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_SOCAT) += socat'
+append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_USBIP) += sysfsutils'
+append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_USBIP) += usbip'
 
 echo "Experimental Hadzhioglu package overlay applied:"
 echo "  - vlmcsd / KMS"
 echo "  - ndisc6 + rdisc6"
 echo "  - socat"
+echo "  - USB/IP userspace + sysfsutils"
 echo "  - Stubby options / WebUI"
