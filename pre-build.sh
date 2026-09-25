@@ -25,14 +25,14 @@ if [ -d "$OVERLAY_DIR" ]; then
     cp -a "$OVERLAY_DIR"/. "$PADAVAN_DIR"/
 fi
 
-PATCH_FILE="$ROOTDIR/overlay/patches/0001-vlmcsd-integration.patch"
-if [ -f "$PATCH_FILE" ]; then
-    # Keep the patch readable in the repository while normalizing section
-    # headers before patch(1). This also tolerates accidental indentation in
-    # generated patch text.
+# Apply every experimental source patch in lexical order. Keeping each
+# logical change in a separate patch makes the branch easy to review/revert.
+for PATCH_FILE in "$ROOTDIR"/overlay/patches/*.patch; do
+    [ -f "$PATCH_FILE" ] || continue
+    # Normalize the two harmless formatting variants present in older patches.
     sed -i -e 's/^ diff --git/diff --git/' -e 's/^ @@/@@/' "$PATCH_FILE"
     patch -d "$PADAVAN_DIR" -p1 --forward < "$PATCH_FILE"
-fi
+done
 
 append_make_dir() {
     line="$1"
@@ -51,3 +51,4 @@ echo "Experimental Hadzhioglu package overlay applied:"
 echo "  - vlmcsd / KMS"
 echo "  - ndisc6 + rdisc6"
 echo "  - socat"
+echo "  - Stubby options / WebUI"
