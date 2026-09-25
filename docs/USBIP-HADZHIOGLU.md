@@ -1,53 +1,68 @@
-# USB/IP integration — Hadzhioglu comparison
+# USB/IP integration audit
 
-## Status
+## Comparison result
 
-The WR1200JS build configuration already enables:
+| Function | Hadzhioglu `master` | nilabsent WR1200JS base | Action |
+| --- | --- | --- | --- |
+| USB/IP kernel source | Present under `drivers/staging/usbip` | Present | Keep nilabsent kernel source; copy none |
+| USB/IP kernel configuration | Enabled where selected by board configuration | Source exists, but WR1200JS had `CONFIG_EXPERIMENTAL` disabled and no USB/IP module selections | Enable only the prerequisite and three USB/IP modules for WR1200JS |
+| USB/IP userspace | `trunk/user/usbip` | Missing | Import upstream package sources |
+| `libsysfs` dependency | `trunk/user/sysfsutils` | Missing | Import and build before USB/IP |
+| Build hooks | `sysfsutils` and `usbip` under USB support, gated by `CONFIG_FIRMWARE_INCLUDE_USBIP` | Missing | Patch the existing USB support block |
+| Startup / WebUI | No USB/IP service or WebUI integration found in the package or rc references | None | Keep daemon manual; add no page or startup policy |
 
-`CONFIG_FIRMWARE_INCLUDE_USBIP=y`
+## Upstream source and package details
 
-The nilabsent base tree already contains the kernel-side USB/IP support. The missing part compared with the current Hadzhioglu tree is the userspace implementation and its `sysfsutils` dependency.
+The source is pinned to Hadzhioglu `master` commit `503a6f0064bc5999bf92e47a902a732693a1a4f5` (2026-09-06). The build imports only `trunk/user/usbip` and `trunk/user/sysfsutils`; it verifies the checked-out commit before copying those directories. This makes future upstream changes explicit rather than silently changing the firmware build.
 
-## Hadzhioglu source
+`sysfsutils/Makefile` builds `libsysfs.so` from its listed library objects and installs it as `/lib/libsysfs.so`, with compatibility symlinks `.so.2` and `.so.2.1.0`.
 
-The current `hadzhioglu/padavan-ng` tree contains:
+`usbip/Makefile` builds `libusbip.so` and the two programs. The library is built from `names.c`, `usbip_host_driver.c`, `usbip_common.c`, and `vhci_driver.c`; it links against `libsysfs`. The programs also link against `libsysfs` and `libusbip`. Upstream installs:
 
-- `trunk/user/usbip/`
-- `trunk/user/sysfsutils/`
-- a `trunk/user/Makefile` entry that builds `sysfsutils` and `usbip` when `CONFIG_FIRMWARE_INCLUDE_USBIP=y`
+- `/sbin/usbip`
+- `/sbin/usbipd`
+- `/lib/libusbip.so` and compatibility symlinks
+- `/lib/libsysfs.so` and compatibility symlinks
 
-The USB/IP userspace build produces `/usr/bin/usbip` and `/sbin/usbipd`. The USB/IP libraries are installed under `/lib`, and `libsysfs` is supplied by `sysfsutils`.
+The earlier status note listed `/usr/bin/usbip`; that path was incorrect. Upstream installs both programs in `/sbin`.
 
-## Experimental implementation
+The build is direct Makefile logic with no autotools/configure step. `usbip` includes `list`, `bind`, `unbind`, `attach`, `detach`, and port reporting commands. `usbipd` serves exported USB devices over TCP port 3240. Upstream documentation states the daemon has no client authentication or authorization.
 
-The experimental builder now imports only these two userspace directories from the current Hadzhioglu repository using a sparse Git clone during `pre-build.sh`:
+## Kernel support
 
-1. `trunk/user/sysfsutils`
-2. `trunk/user/usbip`
+The nilabsent kernel already contains `usbip-core`, `vhci-hcd`, and `usbip-host` sources in `trunk/linux-3.4.x/drivers/staging/usbip`. The WR1200JS kernel config already enables `CONFIG_USB=y`, `CONFIG_NET=y`, `CONFIG_SYSFS=y`, and modules. It did not select USB/IP, and the base Kconfig makes `USBIP_CORE` depend on `EXPERIMENTAL`.
 
-No Hadzhioglu kernel sources are copied.
+The overlay therefore enables `CONFIG_EXPERIMENTAL=y` and builds these existing nilabsent drivers as modules:
 
-`pre-build.sh` also adds these build hooks to the temporary nilabsent `trunk/user/Makefile`:
-
-```make
-dir_$(CONFIG_FIRMWARE_INCLUDE_USBIP) += sysfsutils
-dir_$(CONFIG_FIRMWARE_INCLUDE_USBIP) += usbip
+```text
+CONFIG_USBIP_CORE=m
+CONFIG_USBIP_VHCI_HCD=m
+CONFIG_USBIP_HOST=m
 ```
 
-This preserves the existing WR1200JS configuration and lets the normal Padavan build system compile the userspace tools only when USB/IP is enabled.
+This supplies `usbip-core.ko`, `vhci-hcd.ko`, and `usbip-host.ko` without copying or modifying kernel source. The board build must confirm these modules are included in the firmware image.
 
-## Not added intentionally
+## Runtime and service behavior
 
-- No WebUI was added: the Hadzhioglu USB/IP package itself does not provide a dedicated WebUI page.
-- No new rc/service daemon was invented. `usbipd` is installed as a userspace daemon and can be started manually; any automatic server policy should be handled separately after confirming the desired use case.
-- No kernel USB/IP implementation was copied from Hadzhioglu.
+No Hadzhioglu USB/IP rc startup hook or WebUI was found. The package only installs the daemon; it does not start it. Use `usbipd -D` on a device sharing USB peripherals, after loading `usbip-host`. Use `usbip attach` on a client after loading `vhci-hcd`. `usbip bind` and `usbip unbind` control the server-side device driver association.
 
-## Next validation
+The relevant checks on a built router are:
 
-The next step is a real WR1200JS build. The important checks are:
+```sh
+lsmod | grep -E 'usbip|vhci'
+usbip list -l
+usbip list -r <server>
+usbip bind -b <busid>
+usbip unbind -b <busid>
+usbip attach -r <server> -b <busid>
+usbip detach -p <port>
+usbipd -D
+```
 
-- `usbip` links successfully against `libusbip` and `libsysfs`;
-- `/usr/bin/usbip` exists in the image;
-- `/sbin/usbipd` exists in the image;
-- the required USB/IP kernel modules are present/loadable;
-- `usbip list`, `usbip bind`, `usbip unbind`, `usbip attach`, and `usbip detach` work on the MT7621 target.
+`bind`, `unbind`, `attach`, and `detach` change kernel device associations or remote device attachments. These commands are documented for post-build validation only; they were not run against a real router. A remote-access test also requires a second USB/IP-capable host.
+
+## Validation status
+
+- Source trees, Makefiles, install paths, kernel Kconfig dependencies, and WR1200JS kernel settings were inspected.
+- Both new patches passed an apply check against the inspected nilabsent source contexts.
+- Cross-compilation, firmware contents, module loading, and network runtime behavior still require a full WR1200JS build and device or emulator validation.

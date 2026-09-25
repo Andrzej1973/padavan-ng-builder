@@ -24,20 +24,24 @@ fi
 # replace any kernel sources. A sparse clone keeps the experimental builder
 # small while preserving the upstream package layout exactly.
 HADZHI_TMP="$ROOTDIR/.hadzhioglu-usbip"
-if [ ! -d "$PADAVAN_DIR/trunk/user/usbip" ] || [ ! -d "$PADAVAN_DIR/trunk/user/sysfsutils" ]; then
-    rm -rf "$HADZHI_TMP"
-    if ! command -v git >/dev/null 2>&1; then
-        echo "ERROR: git is required to import Hadzhioglu usbip/sysfsutils" >&2
-        exit 1
-    fi
-    git clone --depth 1 --filter=blob:none --sparse https://gitlab.com/hadzhioglu/padavan-ng.git "$HADZHI_TMP"
-    git -C "$HADZHI_TMP" sparse-checkout set trunk/user/usbip trunk/user/sysfsutils
-    mkdir -p "$PADAVAN_DIR/trunk/user"
-    rm -rf "$PADAVAN_DIR/trunk/user/usbip" "$PADAVAN_DIR/trunk/user/sysfsutils"
-    cp -a "$HADZHI_TMP/trunk/user/usbip" "$PADAVAN_DIR/trunk/user/"
-    cp -a "$HADZHI_TMP/trunk/user/sysfsutils" "$PADAVAN_DIR/trunk/user/"
-    rm -rf "$HADZHI_TMP"
+HADZHI_COMMIT="503a6f0064bc5999bf92e47a902a732693a1a4f5"
+rm -rf "$HADZHI_TMP"
+if ! command -v git >/dev/null 2>&1; then
+    echo "ERROR: git is required to import Hadzhioglu usbip/sysfsutils" >&2
+    exit 1
 fi
+git clone --depth 1 --filter=blob:none --sparse https://gitlab.com/hadzhioglu/padavan-ng.git "$HADZHI_TMP"
+HADZHI_ACTUAL_COMMIT="$(git -C "$HADZHI_TMP" rev-parse HEAD)"
+if [ "$HADZHI_ACTUAL_COMMIT" != "$HADZHI_COMMIT" ]; then
+    echo "ERROR: expected Hadzhioglu $HADZHI_COMMIT, got $HADZHI_ACTUAL_COMMIT" >&2
+    exit 1
+fi
+git -C "$HADZHI_TMP" sparse-checkout set trunk/user/usbip trunk/user/sysfsutils
+mkdir -p "$PADAVAN_DIR/trunk/user"
+rm -rf "$PADAVAN_DIR/trunk/user/usbip" "$PADAVAN_DIR/trunk/user/sysfsutils"
+cp -a "$HADZHI_TMP/trunk/user/usbip" "$PADAVAN_DIR/trunk/user/"
+cp -a "$HADZHI_TMP/trunk/user/sysfsutils" "$PADAVAN_DIR/trunk/user/"
+rm -rf "$HADZHI_TMP"
 
 # Apply only the experimental package overlay. clear_tree.sh does not
 # remove these source files, so the overlay remains available to the build.
@@ -66,8 +70,6 @@ append_make_dir() {
 append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_VLMCSD) += vlmcsd'
 append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_NDISC6_RDISC6) += ndisc6'
 append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_SOCAT) += socat'
-append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_USBIP) += sysfsutils'
-append_make_dir 'dir_$(CONFIG_FIRMWARE_INCLUDE_USBIP) += usbip'
 
 echo "Experimental Hadzhioglu package overlay applied:"
 echo "  - vlmcsd / KMS"
