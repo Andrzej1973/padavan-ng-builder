@@ -1,7 +1,7 @@
 diff --git a/trunk/user/httpd/variables.c b/trunk/user/httpd/variables.c
 --- a/trunk/user/httpd/variables.c
 +++ b/trunk/user/httpd/variables.c
-@@ -545,6 +545,7 @@
+@@ -545,5 +545,6 @@
  			{"stubby_round_robin", "", NULL, EVM_RESTART_STUBBY},
  			{"stubby_mode", "", NULL, EVM_RESTART_STUBBY|EVM_RESTART_DHCPD},
 +			{"stubby_opt", "", NULL, EVM_RESTART_STUBBY},
@@ -12,7 +12,7 @@ diff --git a/trunk/user/httpd/variables.c b/trunk/user/httpd/variables.c
 diff --git a/trunk/user/shared/defaults.c b/trunk/user/shared/defaults.c
 --- a/trunk/user/shared/defaults.c
 +++ b/trunk/user/shared/defaults.c
-@@ -638,6 +638,7 @@
+@@ -638,7 +638,8 @@
  	{ "stubby_listen_port", "5453" },
  	{ "stubby_listen_mode", "0" },
  	{ "stubby_round_robin", "1" },
@@ -38,7 +38,7 @@ diff --git a/trunk/user/stubby/stubby.sh b/trunk/user/stubby/stubby.sh
 diff --git a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp
 --- a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp
 +++ b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp
-@@ -194,6 +194,12 @@
+@@ -194,5 +194,11 @@
                                                  </td>
                                              </tr>
 +                                        <tr>
