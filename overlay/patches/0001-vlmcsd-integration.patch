@@ -10,7 +10,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
 @@ -175,1 +175,2 @@
  #define EVT_RESTART_PRIVOXY		1
 +#define EVT_RESTART_VLMCSD		1
- 
+
  diff --git a/trunk/user/shared/cflags.mk b/trunk/user/shared/cflags.mk
 --- a/trunk/user/shared/cflags.mk
 +++ b/trunk/user/shared/cflags.mk
