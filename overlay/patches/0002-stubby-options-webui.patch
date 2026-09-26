@@ -25,28 +25,18 @@ diff --git a/trunk/user/shared/defaults.c b/trunk/user/shared/defaults.c
 diff --git a/trunk/user/stubby/stubby.sh b/trunk/user/stubby/stubby.sh
 --- a/trunk/user/stubby/stubby.sh
 +++ b/trunk/user/stubby/stubby.sh
-@@ -82,7 +82,7 @@
- 	if [ "$res" ]; then
- 		error "failed to start: $res"
- 	else
--		$STUBBY_BIN -g
-+		$STUBBY_BIN -g $(nvram get stubby_opt)
- 		sleep 1
- 		if pgrep -x "$STUBBY_BIN" 2>&1 >/dev/null; then
- 			log "started, version $($STUBBY_BIN -V | awk '{print $2}'), listening on $LISTEN_ADDR:$LISTEN_PORT"
-
+@@ -100,1 +100,1 @@
+-        $STUBBY_BIN -g
++        $STUBBY_BIN -g $(nvram get stubby_opt)
 diff --git a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp
 --- a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp
 +++ b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp
-@@ -194,5 +194,11 @@
-                                                 </td>
-                                             </tr>
+@@ -194,2 +194,8 @@
+                                        <tr>
+                                            <th colspan="2" style="background-color: #E3E3E3;"><#Service_Stubby_Resolvers_Header#></th>
 +                                        <tr>
 +                                            <th>Stubby options:</th>
 +                                            <td>
 +                                                <input type="text" class="input" size="10" style="width: 210px;" maxlength="55" name="stubby_opt" value="<% nvram_get_x(\"\", \"stubby_opt\"); %>" onkeypress="return is_string(this,event);"/>
 +                                            </td>
 +                                        </tr>
- 
-                                         <tr>
-                                             <th colspan="2" style="background-color: #E3E3E3;"><#Service_Stubby_Resolvers_Header#></th>
