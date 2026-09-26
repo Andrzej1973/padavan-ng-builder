@@ -1,10 +1,16 @@
 #!/bin/sh
 set -eu
 
-ROOTDIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
+ROOTDIR="$(CDPATH= cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)"
 PADAVAN_DIR="$ROOTDIR/padavan-ng"
 OVERLAY_DIR="$ROOTDIR/overlay/padavan-ng"
 USER_MAKEFILE="$PADAVAN_DIR/trunk/user/Makefile"
+
+if [ ! -f "$USER_MAKEFILE" ]; then
+    echo "ERROR: nilabsent user Makefile not found: $USER_MAKEFILE" >&2
+    exit 1
+fi
 
 # Hadzhioglu keeps the vlmcsd source tree alongside its package. The
 # builder repository is intentionally kept small, so fetch the same source
