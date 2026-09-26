@@ -233,9 +233,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  }
  
  function applyRule(){
-@@ -531,3 +535,17 @@
- 							</td>
- 						</tr>
+@@ -531,1 +531,15 @@
 +						<tr id="row_vlmcsd">
 +							<th>KMS Activation server</th>
 +							<td>
@@ -250,4 +248,4 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
 +								</div>
 +							</td>
 +						</tr>
- 						<tr id="row_crontabs" style="display:none">
+                                        <tr id="row_crontabs" style="display:none">
