@@ -7,26 +7,21 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
 +#define EVM_RESTART_VLMCSD		(1ULL << 54)
  
  #define EVM_RELOAD_FIREWALL		(1ULL << 60)
-@@ -128,4 +129,5 @@
- #define EVT_RESTART_STUBBY		1
- #define EVT_RESTART_TOR			2
+@@ -175,1 +175,2 @@
  #define EVT_RESTART_PRIVOXY		1
 +#define EVT_RESTART_VLMCSD		1
  
  diff --git a/trunk/user/shared/cflags.mk b/trunk/user/shared/cflags.mk
 --- a/trunk/user/shared/cflags.mk
 +++ b/trunk/user/shared/cflags.mk
-@@ -244,6 +244,10 @@
+@@ -283,3 +283,7 @@
+ ifeq ($(CONFIG_FIRMWARE_INCLUDE_OPENSSL_EC),y)
  CFLAGS += -DSUPPORT_OPENSSL_EC
  endif
- 
++
 +ifeq ($(CONFIG_FIRMWARE_INCLUDE_VLMCSD),y)
 +CFLAGS += -DAPP_VLMCSD
 +endif
-+
- ifeq ($(CONFIG_FIRMWARE_INCLUDE_IPERF3),y)
- CFLAGS += -DAPP_IPERF3
- endif
 
  diff --git a/trunk/user/shared/notify_rc.h b/trunk/user/shared/notify_rc.h
 --- a/trunk/user/shared/notify_rc.h
