@@ -1,13 +1,13 @@
 diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
 --- a/trunk/user/httpd/common.h
 +++ b/trunk/user/httpd/common.h
-@@ -93,6 +93,7 @@
+@@ -93,4 +93,5 @@
  #define EVM_RELOAD_TOR			(1ULL << 52)
  #define EVM_FLUSH_IPSET_DHCPD		(1ULL << 53)
 +#define EVM_RESTART_VLMCSD		(1ULL << 54)
  
  #define EVM_RELOAD_FIREWALL		(1ULL << 60)
-@@ -128,6 +129,7 @@
+@@ -128,4 +129,5 @@
  #define EVT_RESTART_STUBBY		1
  #define EVT_RESTART_TOR			2
  #define EVT_RESTART_PRIVOXY		1
@@ -31,7 +31,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  diff --git a/trunk/user/shared/notify_rc.h b/trunk/user/shared/notify_rc.h
 --- a/trunk/user/shared/notify_rc.h
 +++ b/trunk/user/shared/notify_rc.h
-@@ -52,6 +52,7 @@
+@@ -52,5 +52,6 @@
  #define RCN_RESTART_PRIVOXY		"restart_privoxy"
  #define RCN_RESTART_DNSCRYPT		"restart_dnscrypt"
 +#define RCN_RESTART_VLMCSD		"restart_vlmcsd"
@@ -59,7 +59,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  diff --git a/trunk/user/rc/services.c b/trunk/user/rc/services.c
 --- a/trunk/user/rc/services.c
 +++ b/trunk/user/rc/services.c
-@@ -464,6 +464,34 @@
+@@ -464,6 +464,39 @@
  }
  #endif
  
@@ -123,7 +123,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  diff --git a/trunk/user/rc/rc.c b/trunk/user/rc/rc.c
 --- a/trunk/user/rc/rc.c
 +++ b/trunk/user/rc/rc.c
-@@ -1311,6 +1311,12 @@
+@@ -1311,7 +1311,14 @@
  		{
  			restart_zram();
  		}
@@ -142,7 +142,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  diff --git a/trunk/user/rc/services_ex.c b/trunk/user/rc/services_ex.c
 --- a/trunk/user/rc/services_ex.c
 +++ b/trunk/user/rc/services_ex.c
-@@ -544,6 +544,11 @@
+@@ -544,6 +544,10 @@
  #if defined(APP_SMBD) || defined(APP_NMBD)
  		else if (nvram_get_int("wins_enable"))
  			fprintf(fp, "dhcp-option=tag:%s,%d,%s\n", DHCPD_RANGE_DEF_TAG, 44, ipaddr);
@@ -157,7 +157,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  diff --git a/trunk/user/shared/defaults.c b/trunk/user/shared/defaults.c
 --- a/trunk/user/shared/defaults.c
 +++ b/trunk/user/shared/defaults.c
-@@ -660,6 +660,9 @@
+@@ -660,5 +660,8 @@
  	{ "dnscrypt_mode", "1" },
  #endif
 +#if defined (APP_VLMCSD)
@@ -180,7 +180,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  			{"http_username", "", NULL, EVM_RESTART_CROND|EVM_BLOCK_UNSAFE},
  			{"http_passwd", "", NULL, EVM_BLOCK_UNSAFE},
  			{"modem_rule", "", NULL, EVM_RESTART_MODEM},
-@@ -1051,6 +1054,9 @@
+@@ -1051,4 +1054,7 @@
  #if defined(APP_DNSCRYPT)
  		{EVM_RESTART_DNSCRYPT,		EVT_RESTART_DNSCRYPT,		RCN_RESTART_DNSCRYPT,		EVM_RESTART_FIREWALL},
  #endif
@@ -204,7 +204,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  #if defined(SUPPORT_ZRAM)
  	int found_support_zram = 1;
  #else
-@@ -2191,6 +2191,7 @@
+@@ -2191,4 +2191,5 @@
  		"function found_app_privoxy() { return %d;}\n"
  		"function found_app_dnscrypt() { return %d;}\n"
 +		"function found_app_vlmcsd() { return %d;}\n"
@@ -222,14 +222,14 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  diff --git a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
 --- a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
 +++ b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_Content.asp
-@@ -27,6 +27,7 @@
+@@ -27,5 +27,6 @@
  	init_itoggle('lltd_enable');
  	init_itoggle('adsc_enable');
  	init_itoggle('crond_enable', change_crond_enabled);
 +	init_itoggle('vlmcsd_enable');
  	init_itoggle('watchdog_cpu');
  });
-@@ -88,6 +89,9 @@
+@@ -88,5 +89,8 @@
  	}
  	change_crond_enabled();
 +
@@ -238,7 +238,7 @@ diff --git a/trunk/user/httpd/common.h b/trunk/user/httpd/common.h
  }
  
  function applyRule(){
-@@ -531,6 +535,19 @@
+@@ -531,3 +535,17 @@
  							</td>
  						</tr>
 +						<tr id="row_vlmcsd">
