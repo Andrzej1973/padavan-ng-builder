@@ -32,11 +32,11 @@ diff --git a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp b/trunk/
 --- a/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp
 +++ b/trunk/user/www/n56u_ribbon_fixed/Advanced_Services_DoT.asp
 @@ -194,2 +194,8 @@
-                                        <tr>
-                                            <th colspan="2" style="background-color: #E3E3E3;"><#Service_Stubby_Resolvers_Header#></th>
 +                                        <tr>
 +                                            <th>Stubby options:</th>
 +                                            <td>
 +                                                <input type="text" class="input" size="10" style="width: 210px;" maxlength="55" name="stubby_opt" value="<% nvram_get_x(\"\", \"stubby_opt\"); %>" onkeypress="return is_string(this,event);"/>
 +                                            </td>
 +                                        </tr>
+                                         <tr>
+                                             <th colspan="2" style="background-color: #E3E3E3;"><#Service_Stubby_Resolvers_Header#></th>
